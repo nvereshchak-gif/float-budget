@@ -228,6 +228,19 @@
   .debt-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--red), var(--amber)); transition: width 0.6s ease; }
   .debt-meta { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; color: var(--text3); }
 
+  /* ── VISA BREAKDOWN ── */
+  .visa-breakdown {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px; margin-top: 14px;
+  }
+  .visa-stat {
+    background: var(--surface2); border-radius: var(--radius-sm);
+    padding: 10px 12px;
+  }
+  .visa-stat-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+  .visa-stat-value { font-family: 'DM Serif Display', serif; font-size: 18px; }
+  .visa-tag { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; padding: 2px 6px; border-radius: 20px; font-weight: 500; background: var(--purple-dim); color: var(--purple); margin-left: 4px; }
+
   /* ── MONTHLY SCREEN ── */
   .month-selector { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 16px; margin-bottom: 8px; }
   .month-nav { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text2); font-size: 18px; }
@@ -379,7 +392,15 @@
           <div class="form-group"><label class="form-label">Balance Owed</label><input class="form-input" id="debt-balance" type="number" placeholder="0.00"></div>
           <div class="form-group"><label class="form-label">Original Total</label><input class="form-input" id="debt-original" type="number" placeholder="0.00"></div>
         </div>
-        <button class="submit-btn" onclick="addDebt()">Add Account</button>
+        <div class="form-group" id="debt-target-group" style="display:none;">
+          <label class="form-label">Balance Ceiling (your target max)</label>
+          <input class="form-input" id="debt-target" type="number" placeholder="e.g. 5500">
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:4px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);">
+          <input type="checkbox" id="debt-is-visa" style="width:16px;height:16px;accent-color:var(--purple);cursor:pointer;" onchange="document.getElementById('debt-target-group').style.display=this.checked?'block':'none'">
+          <label for="debt-is-visa" style="font-size:13px;color:var(--text2);cursor:pointer;">This is my revolving Visa (tracks daily spending + bills)</label>
+        </div>
+        <button class="submit-btn" onclick="addDebt()" style="margin-top:12px;">Add Account</button>
       </div>
     </div>
   </div>
@@ -425,6 +446,10 @@
           <option value="monthly" selected>Once a month</option>
         </select>
         <button class="add-item-btn" onclick="addFixedExpense()">Add</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);">
+        <input type="checkbox" id="fixed-exp-visa" style="width:16px;height:16px;accent-color:var(--purple);cursor:pointer;">
+        <label for="fixed-exp-visa" style="font-size:13px;color:var(--text2);cursor:pointer;">Charged to Visa credit card</label>
       </div>
     </div>
 
@@ -504,6 +529,75 @@
   </div>
 </div>
 
+<!-- EDIT DEBT MODAL -->
+<div class="modal-backdrop" id="edit-debt-backdrop" onclick="closeEditDebt(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Edit Debt</div>
+    <input type="hidden" id="edit-debt-id">
+    <div class="form-group">
+      <label class="form-label">Account Name</label>
+      <input class="form-input" id="edit-debt-name" placeholder="e.g. Visa, Student Loan">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Current Balance Owed</label>
+      <input class="form-input" id="edit-debt-balance" type="number" placeholder="0.00">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Original Total</label>
+      <input class="form-input" id="edit-debt-original" type="number" placeholder="0.00">
+    </div>
+    <div class="form-group" id="edit-debt-target-group">
+      <label class="form-label">Balance Ceiling</label>
+      <input class="form-input" id="edit-debt-target" type="number" placeholder="e.g. 5500">
+    </div>
+    <div class="form-group" id="edit-debt-paid-group">
+      <label class="form-label">Already Paid This Week</label>
+      <input class="form-input" id="edit-debt-paid" type="number" placeholder="0.00">
+      <div style="font-size:11px;color:var(--text3);margin-top:6px;">Set this to what you've already paid toward this week's charges. Resets automatically every Monday.</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);">
+      <input type="checkbox" id="edit-debt-is-visa" style="width:16px;height:16px;accent-color:var(--purple);cursor:pointer;">
+      <label for="edit-debt-is-visa" style="font-size:13px;color:var(--text2);cursor:pointer;">This is my revolving Visa</label>
+    </div>
+    <button class="submit-btn" onclick="saveEditDebt()">Save Changes</button>
+    <button onclick="closeEditDebt()" style="width:100%;padding:14px;background:transparent;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;margin-top:8px;">Cancel</button>
+  </div>
+</div>
+
+<!-- VISA PAYMENT MODAL -->
+<div class="modal-backdrop" id="visa-payment-backdrop" onclick="closeVisaPayment(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Log Visa Payment</div>
+    <input type="hidden" id="visa-pay-debt-id">
+    <div class="form-group">
+      <label class="form-label">Amount Paid</label>
+      <input class="form-input big" id="visa-pay-amount" type="number" placeholder="0.00" inputmode="decimal">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Payment Type</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <button class="type-btn active" id="visa-pay-type-current" onclick="setVisaPayType('current')" style="border-color:var(--accent);color:var(--accent);background:var(--accent-dim);">
+          <div style="font-size:18px;margin-bottom:4px;">✅</div>
+          <div style="font-size:12px;font-weight:600;">Cover Recent</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">Already counted in budget</div>
+        </button>
+        <button class="type-btn" id="visa-pay-type-old" onclick="setVisaPayType('old')" style="border-color:var(--border2);">
+          <div style="font-size:18px;margin-bottom:4px;">💸</div>
+          <div style="font-size:12px;font-weight:600;">Pay Down Old</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px;">Deducts from weekly budget</div>
+        </button>
+      </div>
+    </div>
+    <div id="visa-pay-warning" style="display:none;padding:10px 14px;background:var(--amber-dim);border:1px solid var(--amber);border-radius:var(--radius-sm);font-size:12px;color:var(--amber);margin-bottom:16px;">
+      💸 This will deduct from your weekly free spending since it's paying off old balance.
+    </div>
+    <button class="submit-btn" onclick="submitVisaPayment()">Log Payment</button>
+    <button onclick="closeVisaPayment()" style="width:100%;padding:14px;background:transparent;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;margin-top:8px;">Cancel</button>
+  </div>
+</div>
+
 <!-- BOTTOM NAV -->
 <nav id="main-nav" style="display:none;">
   <button class="nav-btn active" id="nav-home" onclick="showScreen('home')">
@@ -552,6 +646,7 @@ const db = getFirestore(firebaseApp);
 let state = {
   incomes: [], fixedExpenses: [], transactions: [], debts: [], rollover: 0,
   viewMonth: new Date().getMonth(), viewYear: new Date().getFullYear(),
+  visaRollover: 0,
 };
 let currentUser = null;
 let unsubscribe = null;
@@ -856,11 +951,15 @@ function renderSetup() {
     ? '<p style="color:var(--text3);font-size:13px;padding:8px 0;">No fixed expenses added yet.</p>'
     : (state.fixedExpenses||[]).map(e => {
         const mAmt = toMonthly(e.amount, e.freq||'monthly');
+        const visaTag = e.onVisa ? `<span class="visa-tag">💳 Visa</span>` : '';
         return `<div class="setup-item">
-          <div class="setup-item-name">${e.name}
+          <div class="setup-item-name">${e.name}${visaTag}
             <div style="font-size:11px;color:var(--text3);margin-top:2px;">${fmt(e.amount)} · ${FREQ_LABELS[e.freq||'monthly']} <span>(${fmt(mAmt)}/mo)</span></div>
           </div>
-          <button class="setup-delete" onclick="removeFixed(${e.id})">×</button>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <button class="setup-delete" onclick="toggleVisaTag(${e.id})" style="font-size:12px;color:${e.onVisa?'var(--purple)':'var(--text3)'};" title="${e.onVisa?'Remove Visa tag':'Tag as Visa'}">💳</button>
+            <button class="setup-delete" onclick="removeFixed(${e.id})">×</button>
+          </div>
         </div>`;
       }).join('');
 
@@ -891,10 +990,17 @@ window.addFixedExpense = () => {
   const name = document.getElementById('fixed-exp-name').value.trim();
   const amount = parseFloat(document.getElementById('fixed-exp-amount').value);
   const freq = document.getElementById('fixed-exp-freq').value;
+  const onVisa = document.getElementById('fixed-exp-visa').checked;
   if (!name||!amount) return;
-  state.fixedExpenses = [...(state.fixedExpenses||[]), {id:Date.now(),name,amount,freq}];
+  state.fixedExpenses = [...(state.fixedExpenses||[]), {id:Date.now(),name,amount,freq,onVisa}];
   document.getElementById('fixed-exp-name').value = '';
   document.getElementById('fixed-exp-amount').value = '';
+  document.getElementById('fixed-exp-visa').checked = false;
+  save(); renderSetup();
+};
+window.toggleVisaTag = (id) => {
+  const e = (state.fixedExpenses||[]).find(e=>e.id===id);
+  if (e) e.onVisa = !e.onVisa;
   save(); renderSetup();
 };
 window.removeFixed = (id) => {
@@ -911,39 +1017,169 @@ window.resetAllData = () => {
 // ══════════════════════════════════════
 // DEBT
 // ══════════════════════════════════════
+function checkVisaWeekReset() {
+  const wk = currentWeekKey();
+  const visaDebt = (state.debts||[]).find(d=>d.isVisa);
+  if (!visaDebt) return;
+  if (visaDebt.lastWeekKey && visaDebt.lastWeekKey !== wk) {
+    // New week — roll over any unpaid balance and reset paid counter
+    const creditTxs = (state.transactions||[]).filter(t =>
+      t.type==='expense' && t.source==='credit' && t.week===visaDebt.lastWeekKey
+    );
+    const lastSpend = creditTxs.reduce((s,t)=>s+t.amount,0);
+    const visaFixed = (state.fixedExpenses||[]).filter(e=>e.onVisa).reduce((s,e)=>s+toMonthly(e.amount,e.freq||'monthly')/(52/12),0);
+    const lastUnpaid = Math.max(0, lastSpend + visaFixed - (visaDebt.paidThisPeriod||0));
+    state.visaRollover = (state.visaRollover||0) + lastUnpaid;
+    visaDebt.paidThisPeriod = 0;
+    visaDebt.lastWeekKey = wk;
+    save();
+  } else if (!visaDebt.lastWeekKey) {
+    visaDebt.lastWeekKey = wk;
+    save();
+  }
+}
 function renderDebt() {
+  checkVisaWeekReset();
   const total = (state.debts||[]).reduce((s,d)=>s+d.balance,0);
   document.getElementById('debt-total').textContent = fmt(total);
   const list = document.getElementById('debt-list');
   if ((state.debts||[]).length===0) { list.innerHTML='<div class="empty-state"><div class="empty-icon">🎉</div>No debts tracked yet!</div>'; return; }
+
+  // Credit card transactions this week
+  const wk = currentWeekKey();
+  const creditTxs = (state.transactions||[]).filter(t =>
+    t.type==='expense' && t.source==='credit' && t.week===wk
+  );
+  const creditSpendTotal = creditTxs.reduce((s,t)=>s+t.amount,0);
+
+  // Fixed bills on Visa — weekly equivalent
+  const visaFixedWeekly = (state.fixedExpenses||[])
+    .filter(e=>e.onVisa)
+    .reduce((s,e)=>s+toMonthly(e.amount,e.freq||'monthly')/(52/12),0);
+  const visaFixedMonthly = visaFixedWeekly * (52/12);
+
   list.innerHTML = (state.debts||[]).map(d => {
-    const pct = d.original>0 ? Math.min(100,((d.original-d.balance)/d.original)*100) : 0;
-    return `<div class="debt-card">
-      <div class="debt-card-header">
-        <div><div class="debt-card-name">${d.name}</div><div style="font-size:11px;color:var(--text3);margin-top:2px;">${pct.toFixed(0)}% paid off</div></div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div class="debt-card-amount">${fmt(d.balance)}</div>
-          <button class="setup-delete" onclick="removeDebt(${d.id})">×</button>
+    const isVisa = d.isVisa || false;
+
+    if (isVisa) {
+      // For Visa: auto-update balance to include logged credit transactions
+      const autoBalance = d.balance + creditSpendTotal;
+      const target = d.target || 5500;
+      const paidThisPeriod = (d.paidThisPeriod || 0);
+      const visaRollover = (state.visaRollover || 0);
+      const totalUnpaid = Math.max(0, creditSpendTotal + visaFixedWeekly - paidThisPeriod) + visaRollover;
+      const projected = d.balance + totalUnpaid;
+      const headroom = target - projected;
+      const headroomColor = headroom < 0 ? 'var(--red)' : headroom < 300 ? 'var(--amber)' : 'var(--accent)';
+      const projectedPct = Math.min(100, (projected / target) * 100);
+
+      return `<div class="debt-card" style="border-color:rgba(176,107,255,0.25);">
+        <div class="debt-card-header">
+          <div>
+            <div class="debt-card-name">${d.name} <span class="visa-tag">revolving</span></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">Target ceiling: ${fmt(target)}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div class="debt-card-amount" style="color:var(--purple);">${fmt(d.balance)}</div>
+            <button class="setup-delete" onclick="openEditDebt(${d.id})" style="color:var(--text3);font-size:14px;padding:4px 6px;" title="Edit">✎</button>
+            <button class="setup-delete" onclick="removeDebt(${d.id})">×</button>
+          </div>
         </div>
-      </div>
-      <div class="debt-bar-bg"><div class="debt-bar-fill" style="width:${pct}%"></div></div>
-      <div class="debt-meta"><span>${fmt(d.original-d.balance)} paid</span><span>${fmt(d.original)} original</span></div>
-      <div style="display:flex;gap:8px;margin-top:12px;">
-        <input class="form-input" id="payment-${d.id}" type="number" placeholder="Payment amount" style="flex:1;padding:8px 12px;font-size:13px;">
-        <button class="add-item-btn" onclick="makePayment(${d.id})">Pay</button>
-      </div>
-    </div>`;
+
+        <!-- Balance toward target bar -->
+        <div style="margin-top:14px;">
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:5px;">
+            <span>Projected balance</span><span style="color:${headroomColor};">${fmt(headroom)} headroom</span>
+          </div>
+          <div class="debt-bar-bg">
+            <div class="debt-bar-fill" style="width:${projectedPct}%;background:linear-gradient(90deg,var(--purple),var(--red));"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:4px;">
+            <span>Current: ${fmt(d.balance)}</span><span>Projected: ${fmt(projected)}</span>
+          </div>
+        </div>
+
+        <!-- This period breakdown -->
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+            <div style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);">This Week</div>
+            ${visaRollover>0?`<div style="font-size:11px;color:var(--amber);">+${fmt(visaRollover)} rolled over</div>`:''}
+          </div>
+          <div class="visa-breakdown">
+            <div class="visa-stat">
+              <div class="visa-stat-label">Fixed Bills</div>
+              <div class="visa-stat-value" style="color:var(--amber);">${fmt(visaFixedWeekly)}</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:2px;">weekly portion</div>
+            </div>
+            <div class="visa-stat">
+              <div class="visa-stat-label">Daily Spending</div>
+              <div class="visa-stat-value" style="color:var(--purple);">${fmt(creditSpendTotal)}</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:2px;">this week</div>
+            </div>
+          </div>
+
+          <!-- Unpaid / paid breakdown -->
+          <div style="margin-top:8px;background:var(--surface2);border-radius:var(--radius-sm);overflow:hidden;">
+            <div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);">
+              <div>
+                <div style="font-size:12px;color:var(--text2);">Paid this period</div>
+                <div style="font-size:10px;color:var(--text3);margin-top:1px;">Covers current charges</div>
+              </div>
+              <div style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--accent);">${fmt(paidThisPeriod)}</div>
+            </div>
+            <div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <div style="font-size:12px;color:var(--text2);">Still unpaid</div>
+                <div style="font-size:10px;color:var(--text3);margin-top:1px;">Suggested next payment</div>
+              </div>
+              <div style="font-family:'DM Serif Display',serif;font-size:18px;color:${totalUnpaid>0?'var(--red)':'var(--accent)'};">${fmt(totalUnpaid)}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment buttons -->
+        <button class="submit-btn" onclick="openVisaPayment(${d.id})" style="margin-top:14px;background:var(--purple);color:#fff;">Log Payment</button>
+      </div>`;
+
+    } else {
+      // Regular debt card
+      const pct = d.original>0 ? Math.min(100,((d.original-d.balance)/d.original)*100) : 0;
+      return `<div class="debt-card">
+        <div class="debt-card-header">
+          <div>
+            <div class="debt-card-name">${d.name}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">${pct.toFixed(0)}% paid off</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div class="debt-card-amount">${fmt(d.balance)}</div>
+            <button class="setup-delete" onclick="openEditDebt(${d.id})" style="color:var(--text3);font-size:14px;padding:4px 6px;" title="Edit">✎</button>
+            <button class="setup-delete" onclick="removeDebt(${d.id})">×</button>
+          </div>
+        </div>
+        <div class="debt-bar-bg"><div class="debt-bar-fill" style="width:${pct}%"></div></div>
+        <div class="debt-meta"><span>${fmt(d.original-d.balance)} paid</span><span>${fmt(d.original)} original</span></div>
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <input class="form-input" id="payment-${d.id}" type="number" placeholder="Payment amount" style="flex:1;padding:8px 12px;font-size:13px;">
+          <button class="add-item-btn" onclick="makePayment(${d.id})">Pay</button>
+        </div>
+      </div>`;
+    }
   }).join('');
 }
 window.addDebt = () => {
   const name = document.getElementById('debt-name').value.trim();
   const balance = parseFloat(document.getElementById('debt-balance').value);
   const original = parseFloat(document.getElementById('debt-original').value)||balance;
+  const isVisa = document.getElementById('debt-is-visa').checked;
+  const target = isVisa ? (parseFloat(document.getElementById('debt-target').value)||5500) : null;
   if (!name||!balance) return;
-  state.debts = [...(state.debts||[]), {id:Date.now(),name,balance,original}];
+  state.debts = [...(state.debts||[]), {id:Date.now(),name,balance,original,isVisa,target,paidThisPeriod:0}];
   document.getElementById('debt-name').value='';
   document.getElementById('debt-balance').value='';
   document.getElementById('debt-original').value='';
+  document.getElementById('debt-target').value='';
+  document.getElementById('debt-is-visa').checked=false;
+  document.getElementById('debt-target-group').style.display='none';
   save(); renderDebt();
 };
 window.removeDebt = (id) => { state.debts=(state.debts||[]).filter(d=>d.id!==id); save(); renderDebt(); };
@@ -952,6 +1188,103 @@ window.makePayment = (id) => {
   if (!amt||amt<=0) return;
   const d = (state.debts||[]).find(d=>d.id===id);
   if (d) d.balance = Math.max(0, d.balance-amt);
+  save(); renderDebt();
+};
+
+// ── VISA PAYMENT ──
+let visaPayType = 'current';
+window.openVisaPayment = (id) => {
+  document.getElementById('visa-pay-debt-id').value = id;
+  document.getElementById('visa-pay-amount').value = '';
+  setVisaPayType('current');
+  document.getElementById('visa-payment-backdrop').classList.add('open');
+  setTimeout(()=>document.getElementById('visa-pay-amount').focus(),300);
+};
+window.closeVisaPayment = (e) => {
+  if (!e || e.target===document.getElementById('visa-payment-backdrop'))
+    document.getElementById('visa-payment-backdrop').classList.remove('open');
+};
+window.setVisaPayType = (type) => {
+  visaPayType = type;
+  const btnCurrent = document.getElementById('visa-pay-type-current');
+  const btnOld = document.getElementById('visa-pay-type-old');
+  const warning = document.getElementById('visa-pay-warning');
+  if (type==='current') {
+    btnCurrent.style.borderColor='var(--accent)'; btnCurrent.style.color='var(--accent)'; btnCurrent.style.background='var(--accent-dim)';
+    btnOld.style.borderColor='var(--border2)'; btnOld.style.color='var(--text2)'; btnOld.style.background='var(--surface2)';
+    warning.style.display='none';
+  } else {
+    btnOld.style.borderColor='var(--amber)'; btnOld.style.color='var(--amber)'; btnOld.style.background='var(--amber-dim)';
+    btnCurrent.style.borderColor='var(--border2)'; btnCurrent.style.color='var(--text2)'; btnCurrent.style.background='var(--surface2)';
+    warning.style.display='block';
+  }
+};
+window.submitVisaPayment = () => {
+  const amt = parseFloat(document.getElementById('visa-pay-amount').value);
+  const id = parseInt(document.getElementById('visa-pay-debt-id').value);
+  if (!amt||amt<=0) { alert('Please enter a valid amount.'); return; }
+  const d = (state.debts||[]).find(d=>d.id===id);
+  if (!d) return;
+
+  if (visaPayType === 'current') {
+    // Covers recent charges — reduce unpaid period balance only, reduce card balance
+    d.paidThisPeriod = (d.paidThisPeriod||0) + amt;
+    d.balance = Math.max(0, d.balance - amt);
+  } else {
+    // Paying down old balance — reduce card balance AND deduct from weekly spending
+    d.balance = Math.max(0, d.balance - amt);
+    // Log as a chequing expense so it hits weekly budget
+    const now = new Date();
+    const tx = {
+      id: Date.now(), type: 'expense', amount: amt,
+      desc: `Visa balance payment (${d.name})`,
+      cat: 'misc', source: 'chequing',
+      date: now.toISOString(), week: currentWeekKey(),
+      month: now.getMonth(), year: now.getFullYear(),
+      visaDebtPayment: true,
+    };
+    state.transactions = [tx, ...(state.transactions||[])];
+  }
+
+  document.getElementById('visa-payment-backdrop').classList.remove('open');
+  save(); renderDebt(); renderHome();
+};
+
+// ══════════════════════════════════════
+// EDIT DEBT
+// ══════════════════════════════════════
+window.openEditDebt = (id) => {
+  const d = (state.debts||[]).find(d=>d.id===id);
+  if (!d) return;
+  document.getElementById('edit-debt-id').value = id;
+  document.getElementById('edit-debt-name').value = d.name;
+  document.getElementById('edit-debt-balance').value = d.balance;
+  document.getElementById('edit-debt-original').value = d.original;
+  document.getElementById('edit-debt-target').value = d.target||'';
+  document.getElementById('edit-debt-paid').value = d.paidThisPeriod||0;
+  document.getElementById('edit-debt-is-visa').checked = d.isVisa||false;
+  const isVisa = d.isVisa||false;
+  document.getElementById('edit-debt-target-group').style.display = isVisa ? 'block' : 'none';
+  document.getElementById('edit-debt-paid-group').style.display = isVisa ? 'block' : 'none';
+  document.getElementById('edit-debt-backdrop').classList.add('open');
+};
+window.closeEditDebt = (e) => {
+  if (!e || e.target===document.getElementById('edit-debt-backdrop')) {
+    document.getElementById('edit-debt-backdrop').classList.remove('open');
+  }
+};
+window.saveEditDebt = () => {
+  const id = parseInt(document.getElementById('edit-debt-id').value);
+  const name = document.getElementById('edit-debt-name').value.trim();
+  const balance = parseFloat(document.getElementById('edit-debt-balance').value);
+  const original = parseFloat(document.getElementById('edit-debt-original').value);
+  const isVisa = document.getElementById('edit-debt-is-visa').checked;
+  const target = parseFloat(document.getElementById('edit-debt-target').value)||5500;
+  const paidThisPeriod = parseFloat(document.getElementById('edit-debt-paid').value)||0;
+  if (!name || isNaN(balance) || isNaN(original)) { alert('Please fill in all fields.'); return; }
+  const d = (state.debts||[]).find(d=>d.id===id);
+  if (d) { d.name=name; d.balance=balance; d.original=original; d.isVisa=isVisa; if(isVisa){ d.target=target; d.paidThisPeriod=paidThisPeriod; } }
+  document.getElementById('edit-debt-backdrop').classList.remove('open');
   save(); renderDebt();
 };
 
