@@ -515,6 +515,7 @@
         <button class="cat-btn" data-cat="shopping" onclick="selectCat(this)"><span class="cat-icon">🛍️</span>Shopping</button>
         <button class="cat-btn" data-cat="entertainment" onclick="selectCat(this)"><span class="cat-icon">🎬</span>Entertainment</button>
         <button class="cat-btn" data-cat="misc" onclick="selectCat(this)"><span class="cat-icon">📦</span>Misc</button>
+        <button class="cat-btn" data-cat="ranim" onclick="selectCat(this)"><span class="cat-icon">👩🏻</span>Ranim</button>
       </div>
     </div>
     <div class="form-group" id="source-group">
@@ -562,6 +563,50 @@
     </div>
     <button class="submit-btn" onclick="saveEditDebt()">Save Changes</button>
     <button onclick="closeEditDebt()" style="width:100%;padding:14px;background:transparent;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;margin-top:8px;">Cancel</button>
+  </div>
+</div>
+
+<!-- EDIT TRANSACTION MODAL -->
+<div class="modal-backdrop" id="edit-tx-backdrop" onclick="closeEditTx(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Edit Transaction</div>
+    <input type="hidden" id="edit-tx-id">
+    <div class="type-toggle">
+      <button class="type-btn expense active" id="edit-type-expense" onclick="setEditType('expense')">💸 Expense</button>
+      <button class="type-btn income" id="edit-type-income" onclick="setEditType('income')">💰 Income</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Amount</label>
+      <input class="form-input big" id="edit-tx-amount" type="number" placeholder="0.00" inputmode="decimal">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <input class="form-input" id="edit-tx-desc" placeholder="What was this for?">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Category</label>
+      <div class="cat-grid" id="edit-cat-grid">
+        <button class="cat-btn" data-cat="groceries" onclick="selectEditCat(this)"><span class="cat-icon">🛒</span>Groceries</button>
+        <button class="cat-btn" data-cat="gas" onclick="selectEditCat(this)"><span class="cat-icon">⛽</span>Gas</button>
+        <button class="cat-btn" data-cat="eating-out" onclick="selectEditCat(this)"><span class="cat-icon">🍔</span>Eating Out</button>
+        <button class="cat-btn" data-cat="shopping" onclick="selectEditCat(this)"><span class="cat-icon">🛍️</span>Shopping</button>
+        <button class="cat-btn" data-cat="entertainment" onclick="selectEditCat(this)"><span class="cat-icon">🎬</span>Entertainment</button>
+        <button class="cat-btn" data-cat="misc" onclick="selectEditCat(this)"><span class="cat-icon">📦</span>Misc</button>
+        <button class="cat-btn" data-cat="ranim" onclick="selectEditCat(this)"><span class="cat-icon">👩🏻</span>Ranim</button>
+      </div>
+    </div>
+    <div class="form-group" id="edit-source-group">
+      <label class="form-label">Payment Source</label>
+      <select class="form-input" id="edit-tx-source">
+        <option value="chequing">🏦 Chequing Account</option>
+        <option value="credit">💳 Credit Card</option>
+        <option value="cash">💵 Cash</option>
+      </select>
+    </div>
+    <button class="submit-btn" onclick="saveEditTx()">Save Changes</button>
+    <button onclick="closeEditTx()" style="width:100%;padding:14px;background:transparent;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;margin-top:8px;">Cancel</button>
+    <button onclick="deleteTx(parseInt(document.getElementById('edit-tx-id').value))" style="width:100%;padding:14px;background:transparent;border:none;color:var(--red);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;margin-top:4px;">🗑 Delete Transaction</button>
   </div>
 </div>
 
@@ -755,6 +800,7 @@ const CAT_META = {
   'shopping':      { icon: '🛍️', color: '#b06bff' },
   'entertainment': { icon: '🎬', color: '#6bb5ff' },
   'misc':          { icon: '📦', color: '#9090a8' },
+  'ranim':         { icon: '👩🏻', color: '#ff9bb5' },
 };
 const FREQ_LABELS = { weekly:'Weekly', biweekly:'Bi-weekly', twicemonth:'Twice/month', monthly:'Monthly' };
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -859,13 +905,15 @@ function renderHome() {
     const srcClass = {chequing:'source-chequing',credit:'source-credit',cash:'source-cash'}[tx.source]||'';
     const srcLabel = {chequing:'🏦 Chequing',credit:'💳 Credit',cash:'💵 Cash'}[tx.source]||'';
     const date = new Date(tx.date).toLocaleDateString('en-CA',{month:'short',day:'numeric'});
-    return `<div class="tx-item">
+    return `<div class="tx-item" style="cursor:pointer;" onclick="openEditTx(${tx.id})">
       <div class="tx-icon" style="background:${meta.color}22;">${meta.icon}</div>
       <div class="tx-info">
         <div class="tx-name">${tx.desc||tx.cat}</div>
         <div class="tx-meta">${date} · <span class="source-badge ${srcClass}">${srcLabel}</span></div>
       </div>
-      <div class="tx-amount ${tx.type}">${tx.type==='expense'?'-':'+'}${fmt(tx.amount)}</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="tx-amount ${tx.type}">${tx.type==='expense'?'-':'+'}${fmt(tx.amount)}</div>
+      </div>
     </div>`;
   }).join('');
 }
@@ -927,6 +975,67 @@ window.addTransaction = () => {
   document.getElementById('tx-amount').value = '';
   document.getElementById('tx-desc').value = '';
   renderHome();
+};
+
+// ══════════════════════════════════════
+// EDIT TRANSACTION
+// ══════════════════════════════════════
+let editTxType = 'expense';
+let editTxCat = 'groceries';
+
+window.openEditTx = (id) => {
+  const tx = (state.transactions||[]).find(t=>t.id===id);
+  if (!tx) return;
+  document.getElementById('edit-tx-id').value = id;
+  document.getElementById('edit-tx-amount').value = tx.amount;
+  document.getElementById('edit-tx-desc').value = tx.desc||'';
+  document.getElementById('edit-tx-source').value = tx.source||'chequing';
+  editTxType = tx.type;
+  editTxCat = tx.cat;
+  // Set type buttons
+  document.getElementById('edit-type-expense').className = 'type-btn expense'+(tx.type==='expense'?' active':'');
+  document.getElementById('edit-type-income').className = 'type-btn income'+(tx.type==='income'?' active':'');
+  document.getElementById('edit-source-group').style.display = tx.type==='expense'?'block':'none';
+  // Set category
+  document.querySelectorAll('#edit-cat-grid .cat-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.cat===tx.cat);
+  });
+  document.getElementById('edit-tx-backdrop').classList.add('open');
+};
+window.closeEditTx = (e) => {
+  if (!e || e.target===document.getElementById('edit-tx-backdrop'))
+    document.getElementById('edit-tx-backdrop').classList.remove('open');
+};
+window.setEditType = (t) => {
+  editTxType = t;
+  document.getElementById('edit-type-expense').className = 'type-btn expense'+(t==='expense'?' active':'');
+  document.getElementById('edit-type-income').className = 'type-btn income'+(t==='income'?' active':'');
+  document.getElementById('edit-source-group').style.display = t==='expense'?'block':'none';
+};
+window.selectEditCat = (el) => {
+  document.querySelectorAll('#edit-cat-grid .cat-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  editTxCat = el.dataset.cat;
+};
+window.saveEditTx = () => {
+  const id = parseInt(document.getElementById('edit-tx-id').value);
+  const amt = parseFloat(document.getElementById('edit-tx-amount').value);
+  const desc = document.getElementById('edit-tx-desc').value.trim();
+  const source = document.getElementById('edit-tx-source').value;
+  if (!amt||amt<=0) { alert('Please enter a valid amount.'); return; }
+  const tx = (state.transactions||[]).find(t=>t.id===id);
+  if (tx) {
+    tx.amount = amt; tx.desc = desc; tx.type = editTxType;
+    tx.cat = editTxCat; tx.source = editTxType==='expense'?source:null;
+  }
+  document.getElementById('edit-tx-backdrop').classList.remove('open');
+  save(); renderHome(); renderMonthly();
+};
+window.deleteTx = (id) => {
+  if (!confirm('Delete this transaction?')) return;
+  state.transactions = (state.transactions||[]).filter(t=>t.id!==id);
+  document.getElementById('edit-tx-backdrop').classList.remove('open');
+  save(); renderHome(); renderMonthly();
 };
 
 // ══════════════════════════════════════
@@ -1320,7 +1429,7 @@ function renderMonthly() {
     offset+=dash;
   });
   svg.innerHTML=svgContent;
-  const catLabels={groceries:'Groceries',gas:'Gas','eating-out':'Eating Out',shopping:'Shopping',entertainment:'Entertainment',misc:'Misc'};
+  const catLabels={groceries:'Groceries',gas:'Gas','eating-out':'Eating Out',shopping:'Shopping',entertainment:'Entertainment',misc:'Misc',ranim:'Ranim'};
   document.getElementById('monthly-legend').innerHTML=cats.map(([cat,amt])=>{
     const meta=CAT_META[cat]||CAT_META.misc;
     return `<div class="legend-item">
