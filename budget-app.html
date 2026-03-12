@@ -541,7 +541,7 @@
       <input class="form-input" id="edit-debt-name" placeholder="e.g. Visa, Student Loan">
     </div>
     <div class="form-group">
-      <label class="form-label">Current Balance Owed</label>
+      <label class="form-label">Starting Balance <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3);font-size:10px;">(your real balance when you set this up — adjust to re-sync with your statement)</span></label>
       <input class="form-input" id="edit-debt-balance" type="number" placeholder="0.00">
     </div>
     <div class="form-group">
@@ -1171,13 +1171,16 @@ function renderDebt() {
     const isVisa = d.isVisa || false;
 
     if (isVisa) {
-      // For Visa: auto-update balance to include logged credit transactions
-      const autoBalance = d.balance + creditSpendTotal;
+      // Live balance = starting balance + all credit txs ever - all payments ever
+      const allCreditTxs = (state.transactions||[]).filter(t=>t.type==='expense'&&t.source==='credit');
+      const totalCreditSpend = allCreditTxs.reduce((s,t)=>s+t.amount,0);
+      const totalPayments = (d.totalPayments||0);
+      const liveBalance = (d.startingBalance != null ? d.startingBalance : d.balance) + totalCreditSpend - totalPayments;
       const target = d.target || 5500;
       const paidThisPeriod = (d.paidThisPeriod || 0);
       const visaRollover = (state.visaRollover || 0);
       const totalUnpaid = Math.max(0, creditSpendTotal + visaFixedWeekly - paidThisPeriod) + visaRollover;
-      const projected = d.balance + totalUnpaid;
+      const projected = liveBalance + totalUnpaid;
       const headroom = target - projected;
       const headroomColor = headroom < 0 ? 'var(--red)' : headroom < 300 ? 'var(--amber)' : 'var(--accent)';
       const projectedPct = Math.min(100, (projected / target) * 100);
@@ -1189,7 +1192,7 @@ function renderDebt() {
             <div style="font-size:11px;color:var(--text3);margin-top:2px;">Target ceiling: ${fmt(target)}</div>
           </div>
           <div style="display:flex;align-items:center;gap:6px;">
-            <div class="debt-card-amount" style="color:var(--purple);">${fmt(d.balance)}</div>
+            <div class="debt-card-amount" style="color:var(--purple);">${fmt(liveBalance)}</div>
             <button class="setup-delete" onclick="openEditDebt(${d.id})" style="color:var(--text3);font-size:14px;padding:4px 6px;" title="Edit">✎</button>
             <button class="setup-delete" onclick="removeDebt(${d.id})">×</button>
           </div>
@@ -1204,7 +1207,7 @@ function renderDebt() {
             <div class="debt-bar-fill" style="width:${projectedPct}%;background:linear-gradient(90deg,var(--purple),var(--red));"></div>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:4px;">
-            <span>Current: ${fmt(d.balance)}</span><span>Projected: ${fmt(projected)}</span>
+            <span>Current: ${fmt(liveBalance)}</span><span>Projected: ${fmt(projected)}</span>
           </div>
         </div>
 
@@ -1282,7 +1285,7 @@ window.addDebt = () => {
   const isVisa = document.getElementById('debt-is-visa').checked;
   const target = isVisa ? (parseFloat(document.getElementById('debt-target').value)||5500) : null;
   if (!name||!balance) return;
-  state.debts = [...(state.debts||[]), {id:Date.now(),name,balance,original,isVisa,target,paidThisPeriod:0}];
+  state.debts = [...(state.debts||[]), {id:Date.now(),name,balance,original,isVisa,target,paidThisPeriod:0,startingBalance:isVisa?balance:null,totalPayments:0}];
   document.getElementById('debt-name').value='';
   document.getElementById('debt-balance').value='';
   document.getElementById('debt-original').value='';
@@ -1336,12 +1339,12 @@ window.submitVisaPayment = () => {
   if (!d) return;
 
   if (visaPayType === 'current') {
-    // Covers recent charges — reduce unpaid period balance only, reduce card balance
+    // Covers recent charges — track payment, totalPayments drives live balance
     d.paidThisPeriod = (d.paidThisPeriod||0) + amt;
-    d.balance = Math.max(0, d.balance - amt);
+    d.totalPayments = (d.totalPayments||0) + amt;
   } else {
-    // Paying down old balance — reduce card balance AND deduct from weekly spending
-    d.balance = Math.max(0, d.balance - amt);
+    // Paying down old balance — track payment AND deduct from weekly spending
+    d.totalPayments = (d.totalPayments||0) + amt;
     // Log as a chequing expense so it hits weekly budget
     const now = new Date();
     const tx = {
@@ -1392,7 +1395,7 @@ window.saveEditDebt = () => {
   const paidThisPeriod = parseFloat(document.getElementById('edit-debt-paid').value)||0;
   if (!name || isNaN(balance) || isNaN(original)) { alert('Please fill in all fields.'); return; }
   const d = (state.debts||[]).find(d=>d.id===id);
-  if (d) { d.name=name; d.balance=balance; d.original=original; d.isVisa=isVisa; if(isVisa){ d.target=target; d.paidThisPeriod=paidThisPeriod; } }
+  if (d) { d.name=name; d.balance=balance; d.original=original; d.isVisa=isVisa; if(isVisa){ d.target=target; d.paidThisPeriod=paidThisPeriod; d.startingBalance=balance; d.totalPayments=0; } }
   document.getElementById('edit-debt-backdrop').classList.remove('open');
   save(); renderDebt();
 };
