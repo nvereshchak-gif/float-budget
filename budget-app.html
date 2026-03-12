@@ -1270,18 +1270,7 @@ function renderDebt() {
   const list = document.getElementById('debt-list');
   if ((state.debts||[]).length===0) { list.innerHTML='<div class="empty-state"><div class="empty-icon">🎉</div>No debts tracked yet!</div>'; return; }
 
-  // Credit card transactions this week
-  const wk = currentWeekKey();
-  const creditTxs = (state.transactions||[]).filter(t =>
-    t.type==='expense' && t.source==='credit' && t.week===wk
-  );
-  const creditSpendTotal = creditTxs.reduce((s,t)=>s+t.amount,0);
 
-  // Fixed bills on Visa — weekly equivalent
-  const visaFixedWeekly = (state.fixedExpenses||[])
-    .filter(e=>e.onVisa)
-    .reduce((s,e)=>s+toMonthly(e.amount,e.freq||'monthly')/(52/12),0);
-  const visaFixedMonthly = visaFixedWeekly * (52/12);
 
   list.innerHTML = (state.debts||[]).map(d => {
     const isVisa = d.isVisa || false;
@@ -1293,13 +1282,9 @@ function renderDebt() {
       const totalPayments = (d.totalPayments||0);
       const liveBalance = (d.startingBalance != null ? d.startingBalance : d.balance) + totalCreditSpend - totalPayments;
       const target = d.target || 5500;
-      const paidThisPeriod = (d.paidThisPeriod || 0);
-      const visaRollover = (state.visaRollover || 0);
-      const totalUnpaid = Math.max(0, creditSpendTotal + visaFixedWeekly - paidThisPeriod) + visaRollover;
-      const projected = liveBalance + totalUnpaid;
-      const headroom = target - projected;
+      const headroom = target - liveBalance;
       const headroomColor = headroom < 0 ? 'var(--red)' : headroom < 300 ? 'var(--amber)' : 'var(--accent)';
-      const projectedPct = Math.min(100, (projected / target) * 100);
+      const projectedPct = Math.min(100, (liveBalance / target) * 100);
 
       return `<div class="debt-card" style="border-color:rgba(176,107,255,0.25);">
         <div class="debt-card-header">
@@ -1317,51 +1302,13 @@ function renderDebt() {
         <!-- Balance toward target bar -->
         <div style="margin-top:14px;">
           <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:5px;">
-            <span>Projected balance</span><span style="color:${headroomColor};">${fmt(headroom)} headroom</span>
+            <span>Balance vs ceiling</span><span style="color:${headroomColor};">${fmt(headroom)} headroom</span>
           </div>
           <div class="debt-bar-bg">
             <div class="debt-bar-fill" style="width:${projectedPct}%;background:linear-gradient(90deg,var(--purple),var(--red));"></div>
           </div>
           <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:4px;">
-            <span>Current: ${fmt(liveBalance)}</span><span>Projected: ${fmt(projected)}</span>
-          </div>
-        </div>
-
-        <!-- This period breakdown -->
-        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-            <div style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);">This Week</div>
-            ${visaRollover>0?`<div style="font-size:11px;color:var(--amber);">+${fmt(visaRollover)} rolled over</div>`:''}
-          </div>
-          <div class="visa-breakdown">
-            <div class="visa-stat">
-              <div class="visa-stat-label">Fixed Bills</div>
-              <div class="visa-stat-value" style="color:var(--amber);">${fmt(visaFixedWeekly)}</div>
-              <div style="font-size:10px;color:var(--text3);margin-top:2px;">weekly portion</div>
-            </div>
-            <div class="visa-stat">
-              <div class="visa-stat-label">Daily Spending</div>
-              <div class="visa-stat-value" style="color:var(--purple);">${fmt(creditSpendTotal)}</div>
-              <div style="font-size:10px;color:var(--text3);margin-top:2px;">this week</div>
-            </div>
-          </div>
-
-          <!-- Unpaid / paid breakdown -->
-          <div style="margin-top:8px;background:var(--surface2);border-radius:var(--radius-sm);overflow:hidden;">
-            <div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);">
-              <div>
-                <div style="font-size:12px;color:var(--text2);">Paid this period</div>
-                <div style="font-size:10px;color:var(--text3);margin-top:1px;">Covers current charges</div>
-              </div>
-              <div style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--accent);">${fmt(paidThisPeriod)}</div>
-            </div>
-            <div style="padding:10px 12px;display:flex;justify-content:space-between;align-items:center;">
-              <div>
-                <div style="font-size:12px;color:var(--text2);">Still unpaid</div>
-                <div style="font-size:10px;color:var(--text3);margin-top:1px;">Suggested next payment</div>
-              </div>
-              <div style="font-family:'DM Serif Display',serif;font-size:18px;color:${totalUnpaid>0?'var(--red)':'var(--accent)'};">${fmt(totalUnpaid)}</div>
-            </div>
+            <span>Current: ${fmt(liveBalance)}</span><span>Ceiling: ${fmt(target)}</span>
           </div>
         </div>
 
