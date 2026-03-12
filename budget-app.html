@@ -610,6 +610,24 @@
   </div>
 </div>
 
+<!-- INTEREST MODAL -->
+<div class="modal-backdrop" id="interest-backdrop" onclick="closeInterest(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Interest Charge</div>
+    <input type="hidden" id="interest-debt-id">
+    <div class="form-group">
+      <label class="form-label">Interest Amount</label>
+      <input class="form-input big" id="interest-amount" type="number" placeholder="0.00" inputmode="decimal">
+    </div>
+    <div style="padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm);font-size:12px;color:var(--text3);margin-bottom:16px;">
+      This adds the interest charge to your Visa balance without affecting your weekly budget or resetting any payments.
+    </div>
+    <button class="submit-btn" onclick="submitInterest()">Add to Balance</button>
+    <button onclick="closeInterest()" style="width:100%;padding:14px;background:transparent;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;margin-top:8px;">Cancel</button>
+  </div>
+</div>
+
 <!-- VISA PAYMENT MODAL -->
 <div class="modal-backdrop" id="visa-payment-backdrop" onclick="closeVisaPayment(event)">
   <div class="modal">
@@ -978,6 +996,81 @@ window.addTransaction = () => {
 };
 
 // ══════════════════════════════════════
+// INTEREST
+// ══════════════════════════════════════
+window.openInterest = (id) => {
+  document.getElementById('interest-debt-id').value = id;
+  document.getElementById('interest-amount').value = '';
+  document.getElementById('interest-backdrop').classList.add('open');
+  setTimeout(()=>document.getElementById('interest-amount').focus(),300);
+};
+window.closeInterest = (e) => {
+  if (!e || e.target===document.getElementById('interest-backdrop'))
+    document.getElementById('interest-backdrop').classList.remove('open');
+};
+window.submitInterest = () => {
+  const amt = parseFloat(document.getElementById('interest-amount').value);
+  const id = parseInt(document.getElementById('interest-debt-id').value);
+  if (!amt||amt<=0) { alert('Please enter a valid amount.'); return; }
+  const d = (state.debts||[]).find(d=>d.id===id);
+  if (!d) return;
+  // Add interest directly to startingBalance so liveBalance increases without touching payments
+  d.startingBalance = (d.startingBalance != null ? d.startingBalance : d.balance) + amt;
+  d.history = d.history||[];
+  d.history.push({id:Date.now(),type:'interest',amount:amt,date:new Date().toLocaleDateString('en-CA',{month:'short',day:'numeric',year:'numeric'})});
+  document.getElementById('interest-backdrop').classList.remove('open');
+  save(); renderDebt();
+};
+
+// ══════════════════════════════════════
+// DELETE DEBT HISTORY ENTRY
+// ══════════════════════════════════════
+window.deleteDebtHistory = (debtId, historyId) => {
+  if (!confirm('Remove this entry? This will also reverse its effect on the balance.')) return;
+  const d = (state.debts||[]).find(d=>d.id===debtId);
+  if (!d) return;
+  const h = (d.history||[]).find(h=>h.id===historyId);
+  if (!h) return;
+  // Reverse the effect
+  if (h.type === 'payment') {
+    d.balance = (d.balance||0) + h.amount;
+  } else if (h.type === 'interest') {
+    d.startingBalance = (d.startingBalance != null ? d.startingBalance : d.balance) - h.amount;
+  } else if (h.type === 'current') {
+    d.paidThisPeriod = Math.max(0, (d.paidThisPeriod||0) - h.amount);
+    d.totalPayments = Math.max(0, (d.totalPayments||0) - h.amount);
+  } else if (h.type === 'old') {
+    d.totalPayments = Math.max(0, (d.totalPayments||0) - h.amount);
+    // Also remove the auto-logged chequing transaction
+    state.transactions = (state.transactions||[]).filter(t=>!(t.visaDebtPayment && Math.abs(t.amount-h.amount)<0.01));
+  }
+  d.history = (d.history||[]).filter(h=>h.id!==historyId);
+  save(); renderDebt(); renderHome();
+};
+
+// ══════════════════════════════════════
+// HISTORY TOGGLE
+// ══════════════════════════════════════
+window.toggleHistory = (id) => {
+  const el = document.getElementById(id);
+  const debtId = id.replace('hist-','');
+  const toggle = document.getElementById('hist-toggle-'+debtId);
+  if (!el) return;
+  const isOpen = el.style.display !== 'none';
+  el.style.display = isOpen ? 'none' : 'block';
+  if (toggle) toggle.textContent = isOpen ? 'Show ▾' : 'Hide ▴';
+};
+window.toggleFullHistory = (fullId, btnId) => {
+  const full = document.getElementById(fullId);
+  const btn = document.getElementById(btnId);
+  if (!full||!btn) return;
+  const isOpen = full.style.display !== 'none';
+  full.style.display = isOpen ? 'none' : 'block';
+  const total = btn.textContent.match(/\d+/)?.[0]||'';
+  btn.textContent = isOpen ? `Show all ${total} entries ▾` : `Show less ▴`;
+};
+
+// ══════════════════════════════════════
 // EDIT TRANSACTION
 // ══════════════════════════════════════
 let editTxType = 'expense';
@@ -1250,7 +1343,49 @@ function renderDebt() {
         </div>
 
         <!-- Payment buttons -->
-        <button class="submit-btn" onclick="openVisaPayment(${d.id})" style="margin-top:14px;background:var(--purple);color:#fff;">Log Payment</button>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:14px;">
+          <button class="submit-btn" onclick="openVisaPayment(${d.id})" style="background:var(--purple);color:#fff;">Log Payment</button>
+          <button onclick="openInterest(${d.id})" style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;">+ Interest</button>
+        </div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+          <button onclick="toggleHistory('hist-${d.id}')" style="background:none;border:none;width:100%;display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:0;">
+            <div style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);">Payment History ${d.history&&d.history.length>0?'('+d.history.length+')':'(0)'}</div>
+            <div style="font-size:11px;color:var(--accent);" id="hist-toggle-${d.id}">Show ▾</div>
+          </button>
+          <div id="hist-${d.id}" style="display:none;margin-top:8px;">
+            ${(d.history&&d.history.length>0)?`
+              <div id="hist-short-${d.id}">
+                ${d.history.slice().reverse().slice(0,5).map(h=>`
+                  <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);">
+                    <div>
+                      <div style="font-size:13px;color:${h.type==='interest'?'var(--red)':h.type==='old'?'var(--amber)':'var(--accent)'};">${h.type==='interest'?'Interest charge':h.type==='old'?'Balance paydown':'Payment (current)'}</div>
+                      <div style="font-size:11px;color:var(--text3);margin-top:1px;">${h.date}</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <div style="font-family:'DM Serif Display',serif;font-size:16px;color:${h.type==='interest'?'var(--red)':h.type==='old'?'var(--amber)':'var(--accent)'};">${h.type==='interest'?'+':'-'}${fmt(h.amount)}</div>
+                      <button onclick="deleteDebtHistory(${d.id},${h.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:2px 4px;">×</button>
+                    </div>
+                  </div>`).join('')}
+              </div>
+              ${d.history.length>5?`
+                <div id="hist-full-${d.id}" style="display:none;">
+                  ${d.history.slice().reverse().slice(5).map(h=>`
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);">
+                      <div>
+                        <div style="font-size:13px;color:${h.type==='interest'?'var(--red)':h.type==='old'?'var(--amber)':'var(--accent)'};">${h.type==='interest'?'Interest charge':h.type==='old'?'Balance paydown':'Payment (current)'}</div>
+                        <div style="font-size:11px;color:var(--text3);margin-top:1px;">${h.date}</div>
+                      </div>
+                      <div style="display:flex;align-items:center;gap:10px;">
+                        <div style="font-family:'DM Serif Display',serif;font-size:16px;color:${h.type==='interest'?'var(--red)':h.type==='old'?'var(--amber)':'var(--accent)'};">${h.type==='interest'?'+':'-'}${fmt(h.amount)}</div>
+                        <button onclick="deleteDebtHistory(${d.id},${h.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:2px 4px;">×</button>
+                      </div>
+                    </div>`).join('')}
+                </div>
+                <button onclick="toggleFullHistory('hist-full-${d.id}','hist-showmore-${d.id}')" id="hist-showmore-${d.id}" style="width:100%;padding:10px;background:none;border:none;color:var(--accent);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;margin-top:4px;">Show all ${d.history.length} entries ▾</button>
+              `:''}
+            `:'<div style="font-size:13px;color:var(--text3);padding:8px 0;">No history yet.</div>'}
+          </div>
+        </div>
       </div>`;
 
     } else {
@@ -1273,6 +1408,46 @@ function renderDebt() {
         <div style="display:flex;gap:8px;margin-top:12px;">
           <input class="form-input" id="payment-${d.id}" type="number" placeholder="Payment amount" style="flex:1;padding:8px 12px;font-size:13px;">
           <button class="add-item-btn" onclick="makePayment(${d.id})">Pay</button>
+          <button onclick="openInterest(${d.id})" style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;">+ Interest</button>
+        </div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+          <button onclick="toggleHistory('hist-${d.id}')" style="background:none;border:none;width:100%;display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:0;">
+            <div style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text3);">Payment History ${d.history&&d.history.length>0?'('+d.history.length+')':'(0)'}</div>
+            <div style="font-size:11px;color:var(--accent);" id="hist-toggle-${d.id}">Show ▾</div>
+          </button>
+          <div id="hist-${d.id}" style="display:none;margin-top:8px;">
+            ${(d.history&&d.history.length>0)?`
+              <div id="hist-short-${d.id}">
+                ${d.history.slice().reverse().slice(0,5).map(h=>`
+                  <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);">
+                    <div>
+                      <div style="font-size:13px;color:${h.type==='interest'?'var(--red)':'var(--accent)'};">${h.type==='interest'?'Interest charge':'Payment'}</div>
+                      <div style="font-size:11px;color:var(--text3);margin-top:1px;">${h.date}</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <div style="font-family:'DM Serif Display',serif;font-size:16px;color:${h.type==='interest'?'var(--red)':'var(--accent)'};">${h.type==='interest'?'+':'-'}${fmt(h.amount)}</div>
+                      <button onclick="deleteDebtHistory(${d.id},${h.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:2px 4px;">×</button>
+                    </div>
+                  </div>`).join('')}
+              </div>
+              ${d.history.length>5?`
+                <div id="hist-full-${d.id}" style="display:none;">
+                  ${d.history.slice().reverse().slice(5).map(h=>`
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);">
+                      <div>
+                        <div style="font-size:13px;color:${h.type==='interest'?'var(--red)':'var(--accent)'};">${h.type==='interest'?'Interest charge':'Payment'}</div>
+                        <div style="font-size:11px;color:var(--text3);margin-top:1px;">${h.date}</div>
+                      </div>
+                      <div style="display:flex;align-items:center;gap:10px;">
+                        <div style="font-family:'DM Serif Display',serif;font-size:16px;color:${h.type==='interest'?'var(--red)':'var(--accent)'};">${h.type==='interest'?'+':'-'}${fmt(h.amount)}</div>
+                        <button onclick="deleteDebtHistory(${d.id},${h.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:2px 4px;">×</button>
+                      </div>
+                    </div>`).join('')}
+                </div>
+                <button onclick="toggleFullHistory('hist-full-${d.id}','hist-showmore-${d.id}')" id="hist-showmore-${d.id}" style="width:100%;padding:10px;background:none;border:none;color:var(--accent);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;margin-top:4px;">Show all ${d.history.length} entries ▾</button>
+              `:''}
+            `:'<div style="font-size:13px;color:var(--text3);padding:8px 0;">No history yet.</div>'}
+          </div>
         </div>
       </div>`;
     }
@@ -1299,7 +1474,11 @@ window.makePayment = (id) => {
   const amt = parseFloat(document.getElementById('payment-'+id).value);
   if (!amt||amt<=0) return;
   const d = (state.debts||[]).find(d=>d.id===id);
-  if (d) d.balance = Math.max(0, d.balance-amt);
+  if (d) {
+    d.balance = Math.max(0, d.balance-amt);
+    d.history = d.history||[];
+    d.history.push({id:Date.now(),type:'payment',amount:amt,date:new Date().toLocaleDateString('en-CA',{month:'short',day:'numeric',year:'numeric'})});
+  }
   save(); renderDebt();
 };
 
@@ -1338,13 +1517,15 @@ window.submitVisaPayment = () => {
   const d = (state.debts||[]).find(d=>d.id===id);
   if (!d) return;
 
+  const dateStr = new Date().toLocaleDateString('en-CA',{month:'short',day:'numeric',year:'numeric'});
+  d.history = d.history||[];
   if (visaPayType === 'current') {
-    // Covers recent charges — track payment, totalPayments drives live balance
     d.paidThisPeriod = (d.paidThisPeriod||0) + amt;
     d.totalPayments = (d.totalPayments||0) + amt;
+    d.history.push({id:Date.now(),type:'current',amount:amt,date:dateStr});
   } else {
-    // Paying down old balance — track payment AND deduct from weekly spending
     d.totalPayments = (d.totalPayments||0) + amt;
+    d.history.push({id:Date.now(),type:'old',amount:amt,date:dateStr});
     // Log as a chequing expense so it hits weekly budget
     const now = new Date();
     const tx = {
