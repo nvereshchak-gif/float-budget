@@ -1208,6 +1208,8 @@ window.addIncome = () => {
   save(); renderSetup();
 };
 window.removeIncome = (id) => {
+  const i = (state.incomes||[]).find(i=>i.id===id);
+  if (!confirm(`Delete "${i?.name||'this income'}"? This cannot be undone.`)) return;
   state.incomes = (state.incomes||[]).filter(i=>i.id!==id);
   save(); renderSetup();
 };
@@ -1229,6 +1231,8 @@ window.toggleVisaTag = (id) => {
   save(); renderSetup();
 };
 window.removeFixed = (id) => {
+  const e = (state.fixedExpenses||[]).find(e=>e.id===id);
+  if (!confirm(`Delete "${e?.name||'this expense'}"? This cannot be undone.`)) return;
   state.fixedExpenses = (state.fixedExpenses||[]).filter(e=>e.id!==id);
   save(); renderSetup();
 };
