@@ -280,6 +280,7 @@
   .source-chequing { background: var(--blue-dim); color: var(--blue); }
   .source-credit { background: var(--purple-dim); color: var(--purple); }
   .source-cash { background: var(--amber-dim); color: var(--amber); }
+  .source-fixed-bill { background: var(--purple-dim); color: var(--purple); }
 
   /* ── ROLLOVER ── */
   .rollover-info {
@@ -520,11 +521,15 @@
     </div>
     <div class="form-group" id="source-group">
       <label class="form-label">Payment Source</label>
-      <select class="form-input" id="tx-source">
+      <select class="form-input" id="tx-source" onchange="handleSourceChange(this.value)">
         <option value="chequing">🏦 Chequing Account</option>
         <option value="credit">💳 Credit Card</option>
+        <option value="fixed-bill">📋 Fixed Bill (Visa)</option>
         <option value="cash">💵 Cash</option>
       </select>
+      <div id="fixed-bill-note" style="display:none;margin-top:8px;padding:10px 12px;background:var(--purple-dim);border-radius:var(--radius-sm);border:1px solid rgba(176,107,255,0.3);font-size:12px;color:var(--purple);">
+        📋 Adds to your Visa balance but won't affect your weekly free spending — fixed bills are already budgeted in Setup.
+      </div>
     </div>
     <button class="submit-btn" onclick="addTransaction()">Add Transaction</button>
   </div>
@@ -601,6 +606,7 @@
       <select class="form-input" id="edit-tx-source">
         <option value="chequing">🏦 Chequing Account</option>
         <option value="credit">💳 Credit Card</option>
+        <option value="fixed-bill">📋 Fixed Bill (Visa)</option>
         <option value="cash">💵 Cash</option>
       </select>
     </div>
@@ -855,7 +861,7 @@ function weekLabel(key) {
 function weekBalance() {
   const wk = currentWeekKey();
   const txs = state.transactions.filter(t => t.week === wk);
-  const spent = txs.filter(t => t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  const spent = txs.filter(t => t.type==='expense' && !t.fixedBill).reduce((s,t)=>s+t.amount,0);
   const earned = txs.filter(t => t.type==='income').reduce((s,t)=>s+t.amount,0);
   return weeklyBudget() + (state.rollover||0) - spent + earned;
 }
@@ -882,7 +888,7 @@ function renderHome() {
   const balance = weekBalance();
   const budget = weeklyBudget();
   const txs = state.transactions.filter(t => t.week===wk);
-  const spent = txs.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+  const spent = txs.filter(t=>t.type==='expense'&&!t.fixedBill).reduce((s,t)=>s+t.amount,0);
   const earned = txs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
 
   document.getElementById('home-date-range').textContent = weekLabel(wk);
@@ -920,8 +926,8 @@ function renderHome() {
   }
   list.innerHTML = allTx.map(tx => {
     const meta = CAT_META[tx.cat] || CAT_META.misc;
-    const srcClass = {chequing:'source-chequing',credit:'source-credit',cash:'source-cash'}[tx.source]||'';
-    const srcLabel = {chequing:'🏦 Chequing',credit:'💳 Credit',cash:'💵 Cash'}[tx.source]||'';
+    const srcClass = {chequing:'source-chequing',credit:'source-credit',cash:'source-cash','fixed-bill':'source-fixed-bill'}[tx.source]||'';
+    const srcLabel = {chequing:'🏦 Chequing',credit:'💳 Credit',cash:'💵 Cash','fixed-bill':'📋 Fixed Bill'}[tx.source]||'';
     const date = new Date(tx.date).toLocaleDateString('en-CA',{month:'short',day:'numeric'});
     return `<div class="tx-item" style="cursor:pointer;" onclick="openEditTx(${tx.id})">
       <div class="tx-icon" style="background:${meta.color}22;">${meta.icon}</div>
@@ -957,6 +963,9 @@ window.openModal = () => {
   document.getElementById('modal-backdrop').classList.add('open');
   setTimeout(() => document.getElementById('tx-amount').focus(), 300);
 };
+window.handleSourceChange = (val) => {
+  document.getElementById('fixed-bill-note').style.display = val==='fixed-bill' ? 'block' : 'none';
+};
 window.closeModal = (e) => {
   if (e.target===document.getElementById('modal-backdrop')) {
     document.getElementById('modal-backdrop').classList.remove('open');
@@ -981,18 +990,32 @@ window.addTransaction = () => {
   const source = document.getElementById('tx-source').value;
   if (!amt||amt<=0) { alert('Please enter a valid amount.'); return; }
   const now = new Date();
+  const isFixedBill = source === 'fixed-bill';
   const tx = {
     id: Date.now(), type: currentType, amount: amt, desc, cat: currentCat,
     source: currentType==='expense'?source:null,
     date: now.toISOString(), week: currentWeekKey(),
     month: now.getMonth(), year: now.getFullYear(),
+    fixedBill: isFixedBill,
   };
   state.transactions = [tx, ...(state.transactions||[])];
+
+  // Fixed bill — add to Visa balance without affecting weekly budget
+  if (isFixedBill) {
+    const visaDebt = (state.debts||[]).find(d=>d.isVisa);
+    if (visaDebt) {
+      visaDebt.startingBalance = (visaDebt.startingBalance != null ? visaDebt.startingBalance : visaDebt.balance) + amt;
+      visaDebt.history = visaDebt.history||[];
+      visaDebt.history.push({id:Date.now(),type:'bill',amount:amt,date:now.toLocaleDateString('en-CA',{month:'short',day:'numeric',year:'numeric'}),desc:desc||'Fixed bill'});
+    }
+  }
+
   save();
   document.getElementById('modal-backdrop').classList.remove('open');
   document.getElementById('tx-amount').value = '';
   document.getElementById('tx-desc').value = '';
-  renderHome();
+  document.getElementById('fixed-bill-note').style.display = 'none';
+  renderHome(); renderDebt();
 };
 
 // ══════════════════════════════════════
@@ -1362,7 +1385,7 @@ function renderDebt() {
                       <div style="font-size:11px;color:var(--text3);margin-top:1px;">${h.date}</div>
                     </div>
                     <div style="display:flex;align-items:center;gap:10px;">
-                      <div style="font-family:'DM Serif Display',serif;font-size:16px;color:${h.type==='interest'?'var(--red)':h.type==='old'?'var(--amber)':'var(--accent)'};">${h.type==='interest'?'+':'-'}${fmt(h.amount)}</div>
+                      <div style="font-family:'DM Serif Display',serif;font-size:16px;color:${h.type==='interest'?'var(--red)':h.type==='old'?'var(--amber)':'var(--accent)'};">${h.type==='interest'||h.type==='bill'?'+':'-'}${fmt(h.amount)}</div>
                       <button onclick="deleteDebtHistory(${d.id},${h.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:2px 4px;">×</button>
                     </div>
                   </div>`).join('')}
@@ -1376,7 +1399,7 @@ function renderDebt() {
                         <div style="font-size:11px;color:var(--text3);margin-top:1px;">${h.date}</div>
                       </div>
                       <div style="display:flex;align-items:center;gap:10px;">
-                        <div style="font-family:'DM Serif Display',serif;font-size:16px;color:${h.type==='interest'?'var(--red)':h.type==='old'?'var(--amber)':'var(--accent)'};">${h.type==='interest'?'+':'-'}${fmt(h.amount)}</div>
+                        <div style="font-family:'DM Serif Display',serif;font-size:16px;color:${h.type==='interest'?'var(--red)':h.type==='old'?'var(--amber)':'var(--accent)'};">${h.type==='interest'||h.type==='bill'?'+':'-'}${fmt(h.amount)}</div>
                         <button onclick="deleteDebtHistory(${d.id},${h.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:2px 4px;">×</button>
                       </div>
                     </div>`).join('')}
@@ -1421,11 +1444,11 @@ function renderDebt() {
                 ${d.history.slice().reverse().slice(0,5).map(h=>`
                   <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);">
                     <div>
-                      <div style="font-size:13px;color:${h.type==='interest'?'var(--red)':'var(--accent)'};">${h.type==='interest'?'Interest charge':'Payment'}</div>
+                      <div style="font-size:13px;color:${h.type==='interest'?'var(--red)':h.type==='bill'?'var(--purple)':'var(--accent)'};">${h.type==='interest'?'Interest charge':h.type==='bill'?'Fixed bill logged':'Payment'}</div>
                       <div style="font-size:11px;color:var(--text3);margin-top:1px;">${h.date}</div>
                     </div>
                     <div style="display:flex;align-items:center;gap:10px;">
-                      <div style="font-family:'DM Serif Display',serif;font-size:16px;color:${h.type==='interest'?'var(--red)':'var(--accent)'};">${h.type==='interest'?'+':'-'}${fmt(h.amount)}</div>
+                      <div style="font-family:'DM Serif Display',serif;font-size:16px;color:${h.type==='interest'?'var(--red)':h.type==='bill'?'var(--purple)':'var(--accent)'};">${h.type==='interest'||h.type==='bill'?'+':'-'}${fmt(h.amount)}</div>
                       <button onclick="deleteDebtHistory(${d.id},${h.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:2px 4px;">×</button>
                     </div>
                   </div>`).join('')}
@@ -1435,11 +1458,11 @@ function renderDebt() {
                   ${d.history.slice().reverse().slice(5).map(h=>`
                     <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);">
                       <div>
-                        <div style="font-size:13px;color:${h.type==='interest'?'var(--red)':'var(--accent)'};">${h.type==='interest'?'Interest charge':'Payment'}</div>
+                        <div style="font-size:13px;color:${h.type==='interest'?'var(--red)':h.type==='bill'?'var(--purple)':'var(--accent)'};">${h.type==='interest'?'Interest charge':h.type==='bill'?'Fixed bill logged':'Payment'}</div>
                         <div style="font-size:11px;color:var(--text3);margin-top:1px;">${h.date}</div>
                       </div>
                       <div style="display:flex;align-items:center;gap:10px;">
-                        <div style="font-family:'DM Serif Display',serif;font-size:16px;color:${h.type==='interest'?'var(--red)':'var(--accent)'};">${h.type==='interest'?'+':'-'}${fmt(h.amount)}</div>
+                        <div style="font-family:'DM Serif Display',serif;font-size:16px;color:${h.type==='interest'?'var(--red)':h.type==='bill'?'var(--purple)':'var(--accent)'};">${h.type==='interest'||h.type==='bill'?'+':'-'}${fmt(h.amount)}</div>
                         <button onclick="deleteDebtHistory(${d.id},${h.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:2px 4px;">×</button>
                       </div>
                     </div>`).join('')}
