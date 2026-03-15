@@ -784,15 +784,22 @@ window.signOut = async () => {
   if (unsubscribe) unsubscribe();
   await fbSignOut(auth);
   currentUser = null;
+  state = { incomes:[], fixedExpenses:[], transactions:[], debts:[], rollover:0, visaRollover:0, viewMonth:new Date().getMonth(), viewYear:new Date().getFullYear() };
   document.getElementById('app').style.display = 'none';
   document.getElementById('main-nav').style.display = 'none';
   document.getElementById('fab-btn').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
 };
 
+// Also clear state when a new user signs in before loading their data
+function clearState() {
+  state = { incomes:[], fixedExpenses:[], transactions:[], debts:[], rollover:0, visaRollover:0, viewMonth:new Date().getMonth(), viewYear:new Date().getFullYear() };
+}
+
 onAuthStateChanged(auth, (user) => {
   if (user) {
     currentUser = user;
+    clearState();
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('loading-screen').style.display = 'flex';
     // Update user info in setup
@@ -1269,7 +1276,15 @@ function checkVisaWeekReset() {
 }
 function renderDebt() {
   checkVisaWeekReset();
-  const total = (state.debts||[]).reduce((s,d)=>s+d.balance,0);
+  const total = (state.debts||[]).reduce((s,d)=>{
+    if (d.isVisa) {
+      const allCreditTxs = (state.transactions||[]).filter(t=>t.type==='expense'&&t.source==='credit');
+      const totalCreditSpend = allCreditTxs.reduce((a,t)=>a+t.amount,0);
+      const liveBalance = (d.startingBalance != null ? d.startingBalance : d.balance) + totalCreditSpend - (d.totalPayments||0);
+      return s + liveBalance;
+    }
+    return s + d.balance;
+  },0);
   document.getElementById('debt-total').textContent = fmt(total);
   const list = document.getElementById('debt-list');
   if ((state.debts||[]).length===0) { list.innerHTML='<div class="empty-state"><div class="empty-icon">🎉</div>No debts tracked yet!</div>'; return; }
