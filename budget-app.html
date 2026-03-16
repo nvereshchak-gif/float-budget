@@ -280,7 +280,20 @@
   .source-chequing { background: var(--blue-dim); color: var(--blue); }
   .source-credit { background: var(--purple-dim); color: var(--purple); }
   .source-cash { background: var(--amber-dim); color: var(--amber); }
-  .source-fixed-bill { background: var(--purple-dim); color: var(--purple); }
+  .source-fixed-bill { background: rgba(107,255,245,0.12); color: #6bfff5; }
+
+  /* ── UNDO BANNER ── */
+  .undo-banner {
+    margin: 0 16px 12px; padding: 12px 16px;
+    background: var(--amber-dim); border: 1px solid var(--amber);
+    border-radius: var(--radius-sm); font-size: 13px; color: var(--amber);
+    display: none; justify-content: space-between; align-items: center;
+  }
+  .undo-btn {
+    padding: 6px 14px; background: var(--amber); color: #000;
+    border: none; border-radius: 6px;
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer;
+  }
 
   /* ── ROLLOVER ── */
   .rollover-info {
@@ -335,6 +348,10 @@
     <div id="rollover-display" class="rollover-info" style="display:none;">
       <span style="color:var(--text2);">Rolled over from last week</span>
       <span id="rollover-amt"></span>
+    </div>
+    <div class="undo-banner" id="undo-banner">
+      <span>Week ended — looks right?</span>
+      <button class="undo-btn" onclick="undoEndWeek()">Undo</button>
     </div>
     <div class="stats-row">
       <div class="stat-card"><div class="stat-label">Spent This Week</div><div class="stat-value red" id="stat-spent">$0</div></div>
@@ -715,7 +732,6 @@ const db = getFirestore(firebaseApp);
 let state = {
   incomes: [], fixedExpenses: [], transactions: [], debts: [], rollover: 0,
   viewMonth: new Date().getMonth(), viewYear: new Date().getFullYear(),
-  visaRollover: 0,
 };
 let currentUser = null;
 let unsubscribe = null;
@@ -759,6 +775,8 @@ function startListener() {
         viewMonth: state.viewMonth,
         viewYear: state.viewYear,
       };
+      // Clean up legacy forcedWeekKey if present
+      if (state.forcedWeekKey) { delete state.forcedWeekKey; save(); }
     }
     showApp();
     renderHome();
@@ -784,7 +802,7 @@ window.signOut = async () => {
   if (unsubscribe) unsubscribe();
   await fbSignOut(auth);
   currentUser = null;
-  state = { incomes:[], fixedExpenses:[], transactions:[], debts:[], rollover:0, visaRollover:0, viewMonth:new Date().getMonth(), viewYear:new Date().getFullYear() };
+  state = { incomes:[], fixedExpenses:[], transactions:[], debts:[], rollover:0, viewMonth:new Date().getMonth(), viewYear:new Date().getFullYear() };
   document.getElementById('app').style.display = 'none';
   document.getElementById('main-nav').style.display = 'none';
   document.getElementById('fab-btn').style.display = 'none';
@@ -793,7 +811,7 @@ window.signOut = async () => {
 
 // Also clear state when a new user signs in before loading their data
 function clearState() {
-  state = { incomes:[], fixedExpenses:[], transactions:[], debts:[], rollover:0, visaRollover:0, viewMonth:new Date().getMonth(), viewYear:new Date().getFullYear() };
+  state = { incomes:[], fixedExpenses:[], transactions:[], debts:[], rollover:0, viewMonth:new Date().getMonth(), viewYear:new Date().getFullYear() };
 }
 
 onAuthStateChanged(auth, (user) => {
@@ -867,7 +885,7 @@ function weekLabel(key) {
 }
 function weekBalance() {
   const wk = currentWeekKey();
-  const txs = state.transactions.filter(t => t.week === wk);
+  const txs = state.transactions.filter(t => t.week === wk && !t.archived);
   const spent = txs.filter(t => t.type==='expense' && !t.fixedBill).reduce((s,t)=>s+t.amount,0);
   const earned = txs.filter(t => t.type==='income').reduce((s,t)=>s+t.amount,0);
   return weeklyBudget() + (state.rollover||0) - spent + earned;
@@ -894,11 +912,11 @@ function renderHome() {
   const wk = currentWeekKey();
   const balance = weekBalance();
   const budget = weeklyBudget();
-  const txs = state.transactions.filter(t => t.week===wk);
+  const txs = state.transactions.filter(t => t.week===wk && !t.archived);
   const spent = txs.filter(t=>t.type==='expense'&&!t.fixedBill).reduce((s,t)=>s+t.amount,0);
   const earned = txs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
 
-  document.getElementById('home-date-range').textContent = weekLabel(wk);
+  document.getElementById('home-date-range').textContent = weekLabel(currentWeekKey());
   document.getElementById('hero-amount').textContent = fmt(balance);
   document.getElementById('hero-amount').className = 'hero-amount' + (balance<0?' negative':'');
   document.getElementById('hero-weekly').textContent = fmt(budget);
@@ -949,14 +967,43 @@ function renderHome() {
   }).join('');
 }
 
+let endWeekSnapshot = null;
+
 window.clearThisWeek = () => {
   if (!confirm('End this week and roll over your balance to next week?')) return;
-  const wk = currentWeekKey();
-  const txs = (state.transactions||[]).filter(t=>t.week===wk);
-  const spent = txs.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+
+  const wk = getWeekKey(new Date());
+  const txs = (state.transactions||[]).filter(t=>t.week===wk&&!t.archived);
+
+  // Save snapshot for undo
+  endWeekSnapshot = {
+    transactions: JSON.parse(JSON.stringify(state.transactions)),
+    rollover: state.rollover,
+  };
+
+  // Calculate rollover — exclude fixedBill (never touched weekly budget)
+  const spent = txs.filter(t=>t.type==='expense'&&!t.fixedBill).reduce((s,t)=>s+t.amount,0);
   const earned = txs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
   state.rollover = (state.rollover||0) + (earned - spent);
-  state.transactions = (state.transactions||[]).filter(t=>t.week!==wk);
+
+  // Archive this week's transactions — never delete
+  state.transactions = (state.transactions||[]).map(t=>
+    t.week===wk ? {...t, archived:true} : t
+  );
+
+  save();
+  // Show undo banner for 30 seconds
+  const banner = document.getElementById('undo-banner');
+  if (banner) { banner.style.display='flex'; setTimeout(()=>{ banner.style.display='none'; }, 30000); }
+  renderHome();
+};
+
+window.undoEndWeek = () => {
+  if (!endWeekSnapshot) return;
+  state.transactions = endWeekSnapshot.transactions;
+  state.rollover = endWeekSnapshot.rollover;
+  endWeekSnapshot = null;
+  document.getElementById('undo-banner').style.display = 'none';
   save(); renderHome();
 };
 
@@ -1253,29 +1300,7 @@ window.resetAllData = () => {
 // ══════════════════════════════════════
 // DEBT
 // ══════════════════════════════════════
-function checkVisaWeekReset() {
-  const wk = currentWeekKey();
-  const visaDebt = (state.debts||[]).find(d=>d.isVisa);
-  if (!visaDebt) return;
-  if (visaDebt.lastWeekKey && visaDebt.lastWeekKey !== wk) {
-    // New week — roll over any unpaid balance and reset paid counter
-    const creditTxs = (state.transactions||[]).filter(t =>
-      t.type==='expense' && t.source==='credit' && t.week===visaDebt.lastWeekKey
-    );
-    const lastSpend = creditTxs.reduce((s,t)=>s+t.amount,0);
-    const visaFixed = (state.fixedExpenses||[]).filter(e=>e.onVisa).reduce((s,e)=>s+toMonthly(e.amount,e.freq||'monthly')/(52/12),0);
-    const lastUnpaid = Math.max(0, lastSpend + visaFixed - (visaDebt.paidThisPeriod||0));
-    state.visaRollover = (state.visaRollover||0) + lastUnpaid;
-    visaDebt.paidThisPeriod = 0;
-    visaDebt.lastWeekKey = wk;
-    save();
-  } else if (!visaDebt.lastWeekKey) {
-    visaDebt.lastWeekKey = wk;
-    save();
-  }
-}
 function renderDebt() {
-  checkVisaWeekReset();
   const total = (state.debts||[]).reduce((s,d)=>{
     if (d.isVisa) {
       const allCreditTxs = (state.transactions||[]).filter(t=>t.type==='expense'&&t.source==='credit');
@@ -1581,7 +1606,7 @@ window.changeMonth = (dir) => {
 };
 function renderMonthly() {
   document.getElementById('month-display').textContent = `${MONTH_NAMES[state.viewMonth]} ${state.viewYear}`;
-  const txs = (state.transactions||[]).filter(t=>t.type==='expense'&&t.month===state.viewMonth&&t.year===state.viewYear);
+  const txs = (state.transactions||[]).filter(t=>t.type==='expense'&&!t.fixedBill&&t.month===state.viewMonth&&t.year===state.viewYear);
   const byCategory = {};
   txs.forEach(t => { byCategory[t.cat]=(byCategory[t.cat]||0)+t.amount; });
   const total = Object.values(byCategory).reduce((s,v)=>s+v,0);
