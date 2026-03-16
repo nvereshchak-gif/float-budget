@@ -981,10 +981,10 @@ window.clearThisWeek = () => {
     rollover: state.rollover,
   };
 
-  // Calculate rollover — exclude fixedBill (never touched weekly budget)
+  // Calculate rollover — weekly budget + extra income - spending
   const spent = txs.filter(t=>t.type==='expense'&&!t.fixedBill).reduce((s,t)=>s+t.amount,0);
   const earned = txs.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
-  state.rollover = (state.rollover||0) + (earned - spent);
+  state.rollover = (state.rollover||0) + weeklyBudget() + earned - spent;
 
   // Archive this week's transactions — never delete
   state.transactions = (state.transactions||[]).map(t=>
