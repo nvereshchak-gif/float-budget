@@ -178,7 +178,7 @@
     animation: slideUp 0.3s cubic-bezier(0.16,1,0.3,1);
   }
   @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-  .modal-handle { width: 40px; height: 4px; border-radius: 2px; background: var(--surface3); margin: 12px auto 24px; }
+  .modal-handle { width: 40px; height: 4px; border-radius: 2px; background: var(--surface3); margin: 12px auto 24px; cursor: grab; }
   .modal-title { font-family: 'DM Serif Display', serif; font-size: 26px; margin-bottom: 24px; }
 
   /* ── FORM ── */
@@ -526,14 +526,21 @@
     </div>
     <div class="form-group">
       <label class="form-label">Category</label>
-      <div class="cat-grid">
+      <div class="cat-grid" id="cat-expense-cats">
         <button class="cat-btn active" data-cat="groceries" onclick="selectCat(this)"><span class="cat-icon">🛒</span>Groceries</button>
         <button class="cat-btn" data-cat="gas" onclick="selectCat(this)"><span class="cat-icon">⛽</span>Gas</button>
         <button class="cat-btn" data-cat="eating-out" onclick="selectCat(this)"><span class="cat-icon">🍔</span>Eating Out</button>
+        <button class="cat-btn" data-cat="necessities" onclick="selectCat(this)"><span class="cat-icon">🧴</span>Necessities</button>
         <button class="cat-btn" data-cat="shopping" onclick="selectCat(this)"><span class="cat-icon">🛍️</span>Shopping</button>
         <button class="cat-btn" data-cat="entertainment" onclick="selectCat(this)"><span class="cat-icon">🎬</span>Entertainment</button>
         <button class="cat-btn" data-cat="misc" onclick="selectCat(this)"><span class="cat-icon">📦</span>Misc</button>
+      </div>
+      <div class="cat-grid" id="cat-income-cats" style="display:none;">
         <button class="cat-btn" data-cat="ranim" onclick="selectCat(this)"><span class="cat-icon">👩🏻</span>Ranim</button>
+        <button class="cat-btn" data-cat="royalties" onclick="selectCat(this)"><span class="cat-icon">🎵</span>Royalties</button>
+        <button class="cat-btn" data-cat="gig-work" onclick="selectCat(this)"><span class="cat-icon">🔧</span>Gig Work</button>
+        <button class="cat-btn" data-cat="selling" onclick="selectCat(this)"><span class="cat-icon">💰</span>Selling</button>
+        <button class="cat-btn" data-cat="misc-income" onclick="selectCat(this)"><span class="cat-icon">📥</span>Misc</button>
       </div>
     </div>
     <div class="form-group" id="source-group">
@@ -609,13 +616,22 @@
     <div class="form-group">
       <label class="form-label">Category</label>
       <div class="cat-grid" id="edit-cat-grid">
-        <button class="cat-btn" data-cat="groceries" onclick="selectEditCat(this)"><span class="cat-icon">🛒</span>Groceries</button>
-        <button class="cat-btn" data-cat="gas" onclick="selectEditCat(this)"><span class="cat-icon">⛽</span>Gas</button>
-        <button class="cat-btn" data-cat="eating-out" onclick="selectEditCat(this)"><span class="cat-icon">🍔</span>Eating Out</button>
-        <button class="cat-btn" data-cat="shopping" onclick="selectEditCat(this)"><span class="cat-icon">🛍️</span>Shopping</button>
-        <button class="cat-btn" data-cat="entertainment" onclick="selectEditCat(this)"><span class="cat-icon">🎬</span>Entertainment</button>
-        <button class="cat-btn" data-cat="misc" onclick="selectEditCat(this)"><span class="cat-icon">📦</span>Misc</button>
-        <button class="cat-btn" data-cat="ranim" onclick="selectEditCat(this)"><span class="cat-icon">👩🏻</span>Ranim</button>
+        <div id="edit-cat-expense-cats">
+          <button class="cat-btn active" data-cat="groceries" onclick="selectEditCat(this)"><span class="cat-icon">🛒</span>Groceries</button>
+          <button class="cat-btn" data-cat="gas" onclick="selectEditCat(this)"><span class="cat-icon">⛽</span>Gas</button>
+          <button class="cat-btn" data-cat="eating-out" onclick="selectEditCat(this)"><span class="cat-icon">🍔</span>Eating Out</button>
+          <button class="cat-btn" data-cat="necessities" onclick="selectEditCat(this)"><span class="cat-icon">🧴</span>Necessities</button>
+          <button class="cat-btn" data-cat="shopping" onclick="selectEditCat(this)"><span class="cat-icon">🛍️</span>Shopping</button>
+          <button class="cat-btn" data-cat="entertainment" onclick="selectEditCat(this)"><span class="cat-icon">🎬</span>Entertainment</button>
+          <button class="cat-btn" data-cat="misc" onclick="selectEditCat(this)"><span class="cat-icon">📦</span>Misc</button>
+        </div>
+        <div id="edit-cat-income-cats" style="display:none;">
+          <button class="cat-btn" data-cat="ranim" onclick="selectEditCat(this)"><span class="cat-icon">👩🏻</span>Ranim</button>
+          <button class="cat-btn" data-cat="royalties" onclick="selectEditCat(this)"><span class="cat-icon">🎵</span>Royalties</button>
+          <button class="cat-btn" data-cat="gig-work" onclick="selectEditCat(this)"><span class="cat-icon">🔧</span>Gig Work</button>
+          <button class="cat-btn" data-cat="selling" onclick="selectEditCat(this)"><span class="cat-icon">💰</span>Selling</button>
+          <button class="cat-btn" data-cat="misc-income" onclick="selectEditCat(this)"><span class="cat-icon">📥</span>Misc</button>
+        </div>
       </div>
     </div>
     <div class="form-group" id="edit-source-group">
@@ -837,19 +853,27 @@ function showApp() {
   document.getElementById('app').style.display = 'block';
   document.getElementById('main-nav').style.display = 'flex';
   document.getElementById('fab-btn').style.display = 'flex';
+  initSwipeToDismiss();
 }
 
 // ══════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════
 const CAT_META = {
+  // Expense categories
   'groceries':     { icon: '🛒', color: '#7effc4' },
   'gas':           { icon: '⛽', color: '#ffc46b' },
   'eating-out':    { icon: '🍔', color: '#ff9b6b' },
+  'necessities':   { icon: '🧴', color: '#6bfff5' },
   'shopping':      { icon: '🛍️', color: '#b06bff' },
   'entertainment': { icon: '🎬', color: '#6bb5ff' },
   'misc':          { icon: '📦', color: '#9090a8' },
+  // Income categories
   'ranim':         { icon: '👩🏻', color: '#ff9bb5' },
+  'royalties':     { icon: '🎵', color: '#ffd700' },
+  'gig-work':      { icon: '🔧', color: '#a8e6cf' },
+  'selling':       { icon: '💰', color: '#98fb98' },
+  'misc-income':   { icon: '📥', color: '#9090a8' },
 };
 const FREQ_LABELS = { weekly:'Weekly', biweekly:'Bi-weekly', twicemonth:'Twice/month', monthly:'Monthly' };
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -1032,6 +1056,13 @@ window.setType = (t) => {
   document.getElementById('type-expense').className = 'type-btn expense'+(t==='expense'?' active':'');
   document.getElementById('type-income').className = 'type-btn income'+(t==='income'?' active':'');
   document.getElementById('source-group').style.display = t==='expense'?'block':'none';
+  document.getElementById('cat-expense-cats').style.display = t==='expense'?'grid':'none';
+  document.getElementById('cat-income-cats').style.display = t==='income'?'grid':'none';
+  // Reset to default cat for type
+  currentCat = t==='expense' ? 'groceries' : 'ranim';
+  document.querySelectorAll('#cat-expense-cats .cat-btn, #cat-income-cats .cat-btn').forEach(b=>b.classList.remove('active'));
+  const defaultBtn = document.querySelector(`[data-cat="${currentCat}"]`);
+  if (defaultBtn) defaultBtn.classList.add('active');
 };
 window.selectCat = (el) => {
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
@@ -1166,8 +1197,11 @@ window.openEditTx = (id) => {
   document.getElementById('edit-type-expense').className = 'type-btn expense'+(tx.type==='expense'?' active':'');
   document.getElementById('edit-type-income').className = 'type-btn income'+(tx.type==='income'?' active':'');
   document.getElementById('edit-source-group').style.display = tx.type==='expense'?'block':'none';
-  // Set category
-  document.querySelectorAll('#edit-cat-grid .cat-btn').forEach(b=>{
+  // Show correct category grid for type
+  document.getElementById('edit-cat-expense-cats').style.display = tx.type==='expense'?'grid':'none';
+  document.getElementById('edit-cat-income-cats').style.display = tx.type==='income'?'grid':'none';
+  // Set active category
+  document.querySelectorAll('#edit-cat-expense-cats .cat-btn, #edit-cat-income-cats .cat-btn').forEach(b=>{
     b.classList.toggle('active', b.dataset.cat===tx.cat);
   });
   document.getElementById('edit-tx-backdrop').classList.add('open');
@@ -1181,6 +1215,8 @@ window.setEditType = (t) => {
   document.getElementById('edit-type-expense').className = 'type-btn expense'+(t==='expense'?' active':'');
   document.getElementById('edit-type-income').className = 'type-btn income'+(t==='income'?' active':'');
   document.getElementById('edit-source-group').style.display = t==='expense'?'block':'none';
+  document.getElementById('edit-cat-expense-cats').style.display = t==='expense'?'grid':'none';
+  document.getElementById('edit-cat-income-cats').style.display = t==='income'?'grid':'none';
 };
 window.selectEditCat = (el) => {
   document.querySelectorAll('#edit-cat-grid .cat-btn').forEach(b=>b.classList.remove('active'));
@@ -1596,6 +1632,57 @@ window.saveEditDebt = () => {
 };
 
 // ══════════════════════════════════════
+// SWIPE TO DISMISS MODALS
+// ══════════════════════════════════════
+function initSwipeToDismiss() {
+  document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+    const modal = backdrop.querySelector('.modal');
+    if (!modal) return;
+    let startY = 0, currentY = 0, isDragging = false;
+
+    modal.addEventListener('touchstart', (e) => {
+      // Only start drag if touching the handle area (top 60px of modal)
+      const touch = e.touches[0];
+      const modalTop = modal.getBoundingClientRect().top;
+      if (touch.clientY - modalTop > 60) return;
+      startY = touch.clientY;
+      isDragging = true;
+      modal.style.transition = 'none';
+    }, { passive: true });
+
+    modal.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+      currentY = e.touches[0].clientY;
+      const diff = Math.max(0, currentY - startY);
+      modal.style.transform = `translateY(${diff}px)`;
+    }, { passive: true });
+
+    modal.addEventListener('touchend', () => {
+      if (!isDragging) return;
+      isDragging = false;
+      modal.style.transition = '';
+      const diff = currentY - startY;
+      if (diff > 100) {
+        // Dismiss — find which backdrop this is and close it
+        modal.style.transform = 'translateY(100%)';
+        setTimeout(() => {
+          modal.style.transform = '';
+          backdrop.classList.remove('open');
+          // Reset specific modals
+          if (backdrop.id === 'modal-backdrop') {
+            document.getElementById('tx-amount').value = '';
+            document.getElementById('tx-desc').value = '';
+            document.getElementById('fixed-bill-note').style.display = 'none';
+          }
+        }, 250);
+      } else {
+        modal.style.transform = '';
+      }
+    });
+  });
+}
+
+// ══════════════════════════════════════
 // MONTHLY
 // ══════════════════════════════════════
 window.changeMonth = (dir) => {
@@ -1627,7 +1714,7 @@ function renderMonthly() {
     offset+=dash;
   });
   svg.innerHTML=svgContent;
-  const catLabels={groceries:'Groceries',gas:'Gas','eating-out':'Eating Out',shopping:'Shopping',entertainment:'Entertainment',misc:'Misc',ranim:'Ranim'};
+  const catLabels={groceries:'Groceries',gas:'Gas','eating-out':'Eating Out',necessities:'Necessities',shopping:'Shopping',entertainment:'Entertainment',misc:'Misc',ranim:'Ranim',royalties:'Royalties','gig-work':'Gig Work',selling:'Selling','misc-income':'Misc Income'};
   document.getElementById('monthly-legend').innerHTML=cats.map(([cat,amt])=>{
     const meta=CAT_META[cat]||CAT_META.misc;
     return `<div class="legend-item">
