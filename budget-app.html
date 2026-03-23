@@ -374,6 +374,7 @@
       <div style="font-family:'DM Serif Display',serif;font-size:13px;color:var(--text3);letter-spacing:0.05em;">FLOAT</div>
       <h1>Monthly View</h1>
       <p>Where your free spending went.</p>
+      <button onclick="exportMonthlyCSV()" style="position:absolute;top:56px;right:24px;padding:6px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;">⬇ Export</button>
     </div>
     <div class="month-selector">
       <div class="month-nav" onclick="changeMonth(-1)">‹</div>
@@ -1691,6 +1692,8 @@ window.changeMonth = (dir) => {
   if (state.viewMonth>11) { state.viewMonth=0; state.viewYear++; }
   renderMonthly();
 };
+const CAT_LABELS = {groceries:'Groceries',gas:'Gas','eating-out':'Eating Out',necessities:'Necessities',shopping:'Shopping',entertainment:'Entertainment',misc:'Misc',ranim:'Ranim',royalties:'Royalties','gig-work':'Gig Work',selling:'Selling','misc-income':'Misc Income'};
+
 function renderMonthly() {
   document.getElementById('month-display').textContent = `${MONTH_NAMES[state.viewMonth]} ${state.viewYear}`;
   const txs = (state.transactions||[]).filter(t=>t.type==='expense'&&!t.fixedBill&&t.month===state.viewMonth&&t.year===state.viewYear);
@@ -1714,17 +1717,67 @@ function renderMonthly() {
     offset+=dash;
   });
   svg.innerHTML=svgContent;
-  const catLabels={groceries:'Groceries',gas:'Gas','eating-out':'Eating Out',necessities:'Necessities',shopping:'Shopping',entertainment:'Entertainment',misc:'Misc',ranim:'Ranim',royalties:'Royalties','gig-work':'Gig Work',selling:'Selling','misc-income':'Misc Income'};
+
   document.getElementById('monthly-legend').innerHTML=cats.map(([cat,amt])=>{
     const meta=CAT_META[cat]||CAT_META.misc;
-    return `<div class="legend-item">
-      <div class="legend-dot" style="background:${meta.color};"></div>
-      <div class="legend-name">${meta.icon} ${catLabels[cat]||cat}</div>
-      <div class="legend-pct">${((amt/total)*100).toFixed(0)}%</div>
-      <div class="legend-amt">${fmt(amt)}</div>
+    // Group transactions by description within this category
+    const catTxs = txs.filter(t=>t.cat===cat);
+    const byDesc = {};
+    catTxs.forEach(t => {
+      const key = (t.desc||'(no description)').trim();
+      byDesc[key] = (byDesc[key]||0) + t.amount;
+    });
+    const descEntries = Object.entries(byDesc).sort((a,b)=>b[1]-a[1]);
+    const breakdown = descEntries.map(([desc,dAmt])=>`
+      <div style="display:flex;justify-content:space-between;padding:5px 0 5px 22px;border-bottom:1px solid var(--border);">
+        <span style="font-size:12px;color:var(--text2);">${desc}</span>
+        <span style="font-size:12px;font-family:'DM Serif Display',serif;color:var(--text2);">${fmt(dAmt)}</span>
+      </div>`).join('');
+
+    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;" onclick="toggleCatBreakdown('cat-bd-${cat}','cat-arrow-${cat}')">
+        <div style="width:10px;height:10px;border-radius:50%;background:${meta.color};flex-shrink:0;"></div>
+        <div style="flex:1;font-size:14px;">${meta.icon} ${CAT_LABELS[cat]||cat}</div>
+        <div style="font-size:12px;color:var(--text3);">${((amt/total)*100).toFixed(0)}%</div>
+        <div style="font-family:'DM Serif Display',serif;font-size:16px;margin-right:8px;">${fmt(amt)}</div>
+        <div id="cat-arrow-${cat}" style="font-size:11px;color:var(--accent);">▾</div>
+      </div>
+      <div id="cat-bd-${cat}" style="display:none;border-top:1px solid var(--border);">
+        ${breakdown}
+      </div>
     </div>`;
   }).join('');
 }
+
+window.toggleCatBreakdown = (id, arrowId) => {
+  const el = document.getElementById(id);
+  const arrow = document.getElementById(arrowId);
+  if (!el) return;
+  const open = el.style.display !== 'none';
+  el.style.display = open ? 'none' : 'block';
+  if (arrow) arrow.textContent = open ? '▾' : '▴';
+};
+
+window.exportMonthlyCSV = () => {
+  const txs = (state.transactions||[]).filter(t=>t.type==='expense'&&!t.fixedBill&&t.month===state.viewMonth&&t.year===state.viewYear);
+  if (txs.length===0) { alert('No transactions to export for this month.'); return; }
+  const monthName = MONTH_NAMES[state.viewMonth]+' '+state.viewYear;
+  let csv = 'Date,Description,Category,Amount,Source\n';
+  [...txs].sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach(t => {
+    const date = new Date(t.date).toLocaleDateString('en-CA',{month:'short',day:'numeric',year:'numeric'});
+    const desc = (t.desc||'').replace(/,/g,'');
+    const cat = CAT_LABELS[t.cat]||t.cat;
+    const source = {chequing:'Chequing',credit:'Credit Card',cash:'Cash','fixed-bill':'Fixed Bill'}[t.source]||t.source||'';
+    csv += `${date},"${desc}",${cat},${t.amount.toFixed(2)},${source}\n`;
+  });
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Float_${monthName.replace(' ','_')}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
 </script>
 </body>
 </html>
