@@ -1146,7 +1146,11 @@ window.deleteDebtHistory = (debtId, historyId) => {
   if (h.type === 'payment') {
     d.balance = (d.balance||0) + h.amount;
   } else if (h.type === 'interest') {
-    d.startingBalance = (d.startingBalance != null ? d.startingBalance : d.balance) - h.amount;
+    if (d.isVisa) {
+      d.startingBalance = (d.startingBalance != null ? d.startingBalance : d.balance) - h.amount;
+    } else {
+      d.balance = Math.max(0, (d.balance||0) - h.amount);
+    }
   } else if (h.type === 'current') {
     d.paidThisPeriod = Math.max(0, (d.paidThisPeriod||0) - h.amount);
     d.totalPayments = Math.max(0, (d.totalPayments||0) - h.amount);
