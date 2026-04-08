@@ -250,12 +250,7 @@
   .donut-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
   .donut-total { font-family: 'DM Serif Display', serif; font-size: 22px; }
   .donut-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
-  .legend { display: flex; flex-direction: column; gap: 10px; padding: 0 16px; }
-  .legend-item { display: flex; align-items: center; gap: 12px; }
-  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-  .legend-name { flex: 1; font-size: 14px; }
-  .legend-pct { font-size: 12px; color: var(--text3); }
-  .legend-amt { font-family: 'DM Serif Display', serif; font-size: 16px; }
+
 
   /* ── SETUP SCREEN ── */
   .setup-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin: 0 16px 12px; padding: 18px; }
@@ -849,12 +844,13 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
+let swipeInitialized = false;
 function showApp() {
   document.getElementById('loading-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   document.getElementById('main-nav').style.display = 'flex';
   document.getElementById('fab-btn').style.display = 'flex';
-  initSwipeToDismiss();
+  if (!swipeInitialized) { initSwipeToDismiss(); swipeInitialized = true; }
 }
 
 // ══════════════════════════════════════
@@ -1066,7 +1062,8 @@ window.setType = (t) => {
   if (defaultBtn) defaultBtn.classList.add('active');
 };
 window.selectCat = (el) => {
-  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  const grid = el.closest('.cat-grid');
+  if (grid) grid.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
   el.classList.add('active');
   currentCat = el.dataset.cat;
 };
@@ -1123,8 +1120,13 @@ window.submitInterest = () => {
   if (!amt||amt<=0) { alert('Please enter a valid amount.'); return; }
   const d = (state.debts||[]).find(d=>d.id===id);
   if (!d) return;
-  // Add interest directly to startingBalance so liveBalance increases without touching payments
-  d.startingBalance = (d.startingBalance != null ? d.startingBalance : d.balance) + amt;
+  // For Visa: add to startingBalance so liveBalance increases without touching payments
+  // For regular debts: add directly to balance
+  if (d.isVisa) {
+    d.startingBalance = (d.startingBalance != null ? d.startingBalance : d.balance) + amt;
+  } else {
+    d.balance = (d.balance||0) + amt;
+  }
   d.history = d.history||[];
   d.history.push({id:Date.now(),type:'interest',amount:amt,date:new Date().toLocaleDateString('en-CA',{month:'short',day:'numeric',year:'numeric'})});
   document.getElementById('interest-backdrop').classList.remove('open');
