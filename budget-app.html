@@ -560,7 +560,7 @@
   </div>
 </div>
 
-<!-- EDIT DEBT MODAL -->
+<!-- EDIT DEBT MODAL (regular debts) -->
 <div class="modal-backdrop" id="edit-debt-backdrop" onclick="closeEditDebt(event)">
   <div class="modal">
     <div class="modal-handle"></div>
@@ -568,31 +568,46 @@
     <input type="hidden" id="edit-debt-id">
     <div class="form-group">
       <label class="form-label">Account Name</label>
-      <input class="form-input" id="edit-debt-name" placeholder="e.g. Visa, Student Loan">
+      <input class="form-input" id="edit-debt-name" placeholder="e.g. Mastercard, TD Loan">
     </div>
     <div class="form-group">
-      <label class="form-label">Starting Balance <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--text3);font-size:10px;">(your real balance when you set this up — adjust to re-sync with your statement)</span></label>
+      <label class="form-label">Current Balance</label>
       <input class="form-input" id="edit-debt-balance" type="number" placeholder="0.00">
     </div>
     <div class="form-group">
       <label class="form-label">Original Total</label>
       <input class="form-input" id="edit-debt-original" type="number" placeholder="0.00">
     </div>
-    <div class="form-group" id="edit-debt-target-group">
-      <label class="form-label">Balance Ceiling</label>
-      <input class="form-input" id="edit-debt-target" type="number" placeholder="e.g. 5500">
-    </div>
-    <div class="form-group" id="edit-debt-paid-group">
-      <label class="form-label">Already Paid This Week</label>
-      <input class="form-input" id="edit-debt-paid" type="number" placeholder="0.00">
-      <div style="font-size:11px;color:var(--text3);margin-top:6px;">Set this to what you've already paid toward current charges. Use this to correct the unpaid balance if needed.</div>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);">
-      <input type="checkbox" id="edit-debt-is-visa" style="width:16px;height:16px;accent-color:var(--purple);cursor:pointer;">
-      <label for="edit-debt-is-visa" style="font-size:13px;color:var(--text2);cursor:pointer;">This is my revolving Visa</label>
-    </div>
     <button class="submit-btn" onclick="saveEditDebt()">Save Changes</button>
     <button onclick="closeEditDebt()" style="width:100%;padding:14px;background:transparent;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;margin-top:8px;">Cancel</button>
+  </div>
+</div>
+
+<!-- EDIT VISA MODAL -->
+<div class="modal-backdrop" id="edit-visa-backdrop" onclick="closeEditVisa(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Edit Visa</div>
+    <input type="hidden" id="edit-visa-id">
+    <div class="form-group">
+      <label class="form-label">Account Name</label>
+      <input class="form-input" id="edit-visa-name" placeholder="e.g. Visa">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Balance Ceiling</label>
+      <input class="form-input" id="edit-visa-target" type="number" placeholder="e.g. 5500">
+      <div style="font-size:11px;color:var(--text3);margin-top:6px;">Your target maximum balance.</div>
+    </div>
+    <div style="margin-bottom:16px;padding:12px 14px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:8px;">Need to re-sync your balance with your real statement?</div>
+      <div style="display:flex;gap:8px;">
+        <input class="form-input" id="edit-visa-resync" type="number" placeholder="Real balance from bank" style="flex:1;padding:8px 12px;font-size:13px;">
+        <button onclick="resyncVisaBalance()" style="padding:10px 14px;background:var(--purple);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Sync</button>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px;">This resets the balance baseline to match your bank statement without affecting payment history.</div>
+    </div>
+    <button class="submit-btn" onclick="saveEditVisa()">Save Changes</button>
+    <button onclick="closeEditVisa()" style="width:100%;padding:14px;background:transparent;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;margin-top:8px;">Cancel</button>
   </div>
 </div>
 
@@ -1613,17 +1628,50 @@ window.submitVisaPayment = () => {
 window.openEditDebt = (id) => {
   const d = (state.debts||[]).find(d=>d.id===id);
   if (!d) return;
-  document.getElementById('edit-debt-id').value = id;
-  document.getElementById('edit-debt-name').value = d.name;
-  document.getElementById('edit-debt-balance').value = d.balance;
-  document.getElementById('edit-debt-original').value = d.original;
-  document.getElementById('edit-debt-target').value = d.target||'';
-  document.getElementById('edit-debt-paid').value = d.paidThisPeriod||0;
-  document.getElementById('edit-debt-is-visa').checked = d.isVisa||false;
-  const isVisa = d.isVisa||false;
-  document.getElementById('edit-debt-target-group').style.display = isVisa ? 'block' : 'none';
-  document.getElementById('edit-debt-paid-group').style.display = isVisa ? 'block' : 'none';
-  document.getElementById('edit-debt-backdrop').classList.add('open');
+  if (d.isVisa) {
+    document.getElementById('edit-visa-id').value = id;
+    document.getElementById('edit-visa-name').value = d.name;
+    document.getElementById('edit-visa-target').value = d.target||5500;
+    document.getElementById('edit-visa-resync').value = '';
+    document.getElementById('edit-visa-backdrop').classList.add('open');
+  } else {
+    document.getElementById('edit-debt-id').value = id;
+    document.getElementById('edit-debt-name').value = d.name;
+    document.getElementById('edit-debt-balance').value = d.balance;
+    document.getElementById('edit-debt-original').value = d.original;
+    document.getElementById('edit-debt-backdrop').classList.add('open');
+  }
+};
+window.closeEditVisa = (e) => {
+  if (!e || e.target===document.getElementById('edit-visa-backdrop'))
+    document.getElementById('edit-visa-backdrop').classList.remove('open');
+};
+window.saveEditVisa = () => {
+  const id = parseInt(document.getElementById('edit-visa-id').value);
+  const name = document.getElementById('edit-visa-name').value.trim();
+  const target = parseFloat(document.getElementById('edit-visa-target').value)||5500;
+  if (!name) { alert('Please enter a name.'); return; }
+  const d = (state.debts||[]).find(d=>d.id===id);
+  if (d) { d.name=name; d.target=target; }
+  document.getElementById('edit-visa-backdrop').classList.remove('open');
+  save(); renderDebt();
+};
+window.resyncVisaBalance = () => {
+  const id = parseInt(document.getElementById('edit-visa-id').value);
+  const realBalance = parseFloat(document.getElementById('edit-visa-resync').value);
+  if (!realBalance||realBalance<=0) { alert('Please enter your real balance from your bank.'); return; }
+  const d = (state.debts||[]).find(d=>d.id===id);
+  if (!d) return;
+  // Calculate what totalPayments needs to be so liveBalance = realBalance
+  const allCreditTxs = (state.transactions||[]).filter(t=>t.type==='expense'&&t.source==='credit');
+  const totalCreditSpend = allCreditTxs.reduce((s,t)=>s+t.amount,0);
+  // realBalance = startingBalance + totalCreditSpend - totalPayments
+  // so totalPayments = startingBalance + totalCreditSpend - realBalance
+  d.totalPayments = (d.startingBalance||d.balance) + totalCreditSpend - realBalance;
+  document.getElementById('edit-visa-resync').value = '';
+  document.getElementById('edit-visa-backdrop').classList.remove('open');
+  save(); renderDebt();
+  alert(`Balance synced to ${realBalance.toFixed(2)}`);
 };
 window.closeEditDebt = (e) => {
   if (!e || e.target===document.getElementById('edit-debt-backdrop')) {
@@ -1635,12 +1683,9 @@ window.saveEditDebt = () => {
   const name = document.getElementById('edit-debt-name').value.trim();
   const balance = parseFloat(document.getElementById('edit-debt-balance').value);
   const original = parseFloat(document.getElementById('edit-debt-original').value);
-  const isVisa = document.getElementById('edit-debt-is-visa').checked;
-  const target = parseFloat(document.getElementById('edit-debt-target').value)||5500;
-  const paidThisPeriod = parseFloat(document.getElementById('edit-debt-paid').value)||0;
   if (!name || isNaN(balance) || isNaN(original)) { alert('Please fill in all fields.'); return; }
   const d = (state.debts||[]).find(d=>d.id===id);
-  if (d) { d.name=name; d.balance=balance; d.original=original; d.isVisa=isVisa; if(isVisa){ d.target=target; d.paidThisPeriod=paidThisPeriod; d.startingBalance=balance; d.totalPayments=0; } }
+  if (d) { d.name=name; d.balance=balance; d.original=original; }
   document.getElementById('edit-debt-backdrop').classList.remove('open');
   save(); renderDebt();
 };
