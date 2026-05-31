@@ -595,7 +595,7 @@
     </div>
     <div class="form-group">
       <label class="form-label">Balance Ceiling</label>
-      <input class="form-input" id="edit-visa-target" type="number" placeholder="e.g. 5500">
+      <input class="form-input" id="edit-visa-target" type="number" placeholder="e.g. 15000">
       <div style="font-size:11px;color:var(--text3);margin-top:6px;">Your target maximum balance.</div>
     </div>
     <div style="margin-bottom:16px;padding:12px 14px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);">
@@ -1392,7 +1392,6 @@ function renderDebt() {
       const totalPayments = (d.totalPayments||0);
       const liveBalance = (d.startingBalance != null ? d.startingBalance : d.balance) + totalCreditSpend - totalPayments;
       const limit = d.limit || d.target || 15000;
-      const limit = d.limit || 15000;
       const usedPct = Math.min(100, (liveBalance / limit) * 100);
       const barColor = usedPct > 90 ? 'var(--red)' : usedPct > 70 ? 'var(--amber)' : 'var(--purple)';
       const available = Math.max(0, limit - liveBalance);
@@ -1651,10 +1650,10 @@ window.closeEditVisa = (e) => {
 window.saveEditVisa = () => {
   const id = parseInt(document.getElementById('edit-visa-id').value);
   const name = document.getElementById('edit-visa-name').value.trim();
-  const target = parseFloat(document.getElementById('edit-visa-target').value)||5500;
+  const limit = parseFloat(document.getElementById('edit-visa-target').value)||15000;
   if (!name) { alert('Please enter a name.'); return; }
   const d = (state.debts||[]).find(d=>d.id===id);
-  if (d) { d.name=name; d.limit=limit; }
+  if (d) { d.name=name; d.limit=limit; delete d.target; }
   document.getElementById('edit-visa-backdrop').classList.remove('open');
   save(); renderDebt();
 };
