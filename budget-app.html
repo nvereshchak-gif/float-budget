@@ -335,17 +335,17 @@
       </div>
     </div>
     <div class="hero-card">
-      <div class="hero-label">Free to Spend</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="hero-label">Free to Spend</div>
+        <button onclick="openRolloverEdit()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:12px;cursor:pointer;padding:2px 6px;font-family:'DM Sans',sans-serif;">✎ Rollover</button>
+      </div>
       <div class="hero-amount" id="hero-amount">$0.00</div>
       <div class="hero-sub">Weekly budget: <span id="hero-weekly">$0</span></div>
       <div class="week-bar" id="week-bar"></div>
     </div>
     <div id="rollover-display" class="rollover-info" style="display:none;">
       <span style="color:var(--text2);">Rolled over from last week</span>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span id="rollover-amt"></span>
-        <button onclick="openRolloverEdit()" style="background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer;padding:2px 4px;">✎</button>
-      </div>
+      <span id="rollover-amt"></span>
     </div>
     <div class="undo-banner" id="undo-banner">
       <span>Week ended — looks right?</span>
