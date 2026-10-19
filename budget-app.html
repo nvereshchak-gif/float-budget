@@ -5,42 +5,39 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#0a0a0f">
+<meta name="theme-color" content="#111318">
 <title>Float — Weekly Budget</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0a0f; --surface: #13131a; --surface2: #1c1c26; --surface3: #242432;
-    --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.12);
-    --text: #f0f0f5; --text2: #9090a8; --text3: #5a5a72;
-    --accent: #7effc4; --accent-dim: rgba(126,255,196,0.12); --accent-mid: rgba(126,255,196,0.3);
-    --red: #ff6b6b; --red-dim: rgba(255,107,107,0.12);
-    --amber: #ffc46b; --amber-dim: rgba(255,196,107,0.12);
-    --blue: #6bb5ff; --blue-dim: rgba(107,181,255,0.12);
-    --purple: #b06bff; --purple-dim: rgba(176,107,255,0.12);
-    --radius: 16px; --radius-sm: 10px;
+    --bg: #111318; --surface: #1a1d23; --surface2: #21242c; --surface3: #2a2d37;
+    --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.11);
+    --text: #f2f2f0; --text2: #8b8f9e; --text3: #555869;
+    --accent: #2dd4bf; --accent-dim: rgba(45,212,191,0.1); --accent-mid: rgba(45,212,191,0.22);
+    --red: #f87171; --red-dim: rgba(248,113,113,0.1);
+    --amber: #fbbf24; --amber-dim: rgba(251,191,36,0.1);
+    --blue: #60a5fa; --blue-dim: rgba(96,165,250,0.1);
+    --purple: #a78bfa; --purple-dim: rgba(167,139,250,0.1);
+    --green: #2dd4bf; --green-dim: rgba(45,212,191,0.1);
+    --radius: 14px; --radius-sm: 10px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
-  body::before {
-    content: ''; position: fixed; inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-    pointer-events: none; z-index: 9999; opacity: 0.4;
-  }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
 
   /* ── LOGIN SCREEN ── */
   #login-screen {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     min-height: 100vh; padding: 40px 24px; text-align: center;
   }
-  .login-logo { font-family: 'DM Serif Display', serif; font-size: 52px; color: var(--accent); margin-bottom: 8px; }
-  .login-tagline { font-size: 15px; color: var(--text2); margin-bottom: 48px; }
+  .login-logo { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 52px; font-weight: 800; color: var(--accent); margin-bottom: 6px; letter-spacing: -2px; }
+  .login-tagline { font-size: 14px; color: var(--text3); margin-bottom: 48px; letter-spacing: 0.01em; }
   .google-btn {
     display: flex; align-items: center; gap: 12px;
     padding: 16px 28px; border-radius: var(--radius);
-    background: var(--surface); border: 1px solid var(--border2);
-    color: var(--text); font-family: 'DM Sans', sans-serif;
+    background: var(--surface); border: none;
+    color: var(--text); font-family: 'Inter', sans-serif;
     font-size: 15px; font-weight: 500; cursor: pointer;
     transition: border-color 0.2s, background 0.2s;
   }
@@ -71,23 +68,23 @@
   /* ── NAV ── */
   nav {
     position: fixed; bottom: 0; left: 0; right: 0;
-    background: rgba(13,13,20,0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    background: rgba(14,14,20,0.95); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
     border-top: 1px solid var(--border); display: flex; z-index: 100;
     padding-bottom: env(safe-area-inset-bottom);
   }
   .nav-btn {
-    flex: 1; padding: 14px 8px 10px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    flex: 1; padding: 12px 8px 10px; display: flex; flex-direction: column; align-items: center; gap: 4px;
     background: none; border: none; color: var(--text3);
-    font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 500;
-    letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; transition: color 0.2s;
+    font-family: 'Inter', sans-serif; font-size: 9px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: color 0.2s;
   }
   .nav-btn.active { color: var(--accent); }
-  .nav-btn svg { width: 22px; height: 22px; }
+  .nav-btn svg { width: 20px; height: 20px; }
 
   /* ── HEADER ── */
-  .page-header { padding: 56px 24px 20px; position: relative; }
-  .page-header h1 { font-family: 'DM Serif Display', serif; font-size: 32px; font-weight: 400; }
-  .page-header p { color: var(--text2); font-size: 14px; margin-top: 4px; }
+  .page-header { padding: 54px 24px 18px; position: relative; }
+  .page-header h1 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 28px; font-weight: 700; letter-spacing: -0.5px; color: var(--text); }
+  .page-header p { color: var(--text3); font-size: 13px; margin-top: 4px; }
 
   /* ── SYNC STATUS ── */
   .sync-status {
@@ -102,68 +99,63 @@
 
   /* ── HERO CARD ── */
   .hero-card {
-    margin: 0 16px 20px;
-    background: linear-gradient(135deg, #0f2a1e 0%, #0a1a2e 100%);
-    border: 1px solid rgba(126,255,196,0.2); border-radius: 24px; padding: 28px;
+    margin: 0 16px 16px;
+    background: var(--surface);
+    border: none; border-radius: 18px; padding: 26px 24px;
     position: relative; overflow: hidden;
   }
-  .hero-card::before {
-    content: ''; position: absolute; top: -60px; right: -60px;
-    width: 200px; height: 200px;
-    background: radial-gradient(circle, rgba(126,255,196,0.15) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  .hero-label { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
-  .hero-amount { font-family: 'DM Serif Display', serif; font-size: 52px; line-height: 1; color: var(--text); }
+  .hero-label { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
+  .hero-amount { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 48px; font-weight: 800; line-height: 1; color: var(--accent); letter-spacing: -1.5px; }
   .hero-amount.negative { color: var(--red); }
-  .hero-sub { margin-top: 12px; font-size: 13px; color: var(--text2); }
-  .hero-sub span { color: var(--text); font-weight: 500; }
-  .week-bar { margin-top: 20px; display: flex; gap: 4px; }
-  .week-day { flex: 1; height: 4px; border-radius: 2px; background: var(--surface3); transition: background 0.3s; }
+  .hero-sub { margin-top: 10px; font-size: 13px; color: var(--text3); }
+  .hero-sub span { color: var(--text2); font-weight: 500; }
+  .week-bar { margin-top: 20px; display: flex; gap: 3px; }
+  .week-day { flex: 1; height: 3px; border-radius: 2px; background: var(--surface3); transition: background 0.3s; }
   .week-day.past { background: var(--accent-mid); }
   .week-day.today { background: var(--accent); }
 
   /* ── STATS ROW ── */
-  .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px 16px; }
-  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
-  .stat-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
-  .stat-value { font-family: 'DM Serif Display', serif; font-size: 22px; }
-  .stat-value.green { color: var(--accent); }
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 16px 14px; }
+  .stat-card { background: var(--surface); border: none; border-radius: 12px; padding: 14px 16px; }
+
+  .stat-label { font-size: 10px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 6px; font-weight: 600; }
+  .stat-value { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 700; }
+  .stat-value.green { color: var(--green); }
   .stat-value.red { color: var(--red); }
 
   /* ── SECTION ── */
   .section { padding: 0 16px 8px; }
   .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-  .section-title { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); }
+  .section-title { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); opacity: 0.7; }
   .section-action { font-size: 12px; color: var(--accent); font-weight: 500; background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
 
   /* ── TRANSACTION LIST ── */
   .tx-list { display: flex; flex-direction: column; gap: 8px; }
   .tx-item {
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
-    padding: 14px 16px; display: flex; align-items: center; gap: 12px;
-    animation: slideIn 0.25s ease;
+    background: var(--surface); border: none; border-radius: 12px;
+    padding: 12px 14px; display: flex; align-items: center; gap: 12px;
+    animation: slideIn 0.2s ease;
   }
-  @keyframes slideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
-  .tx-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+  @keyframes slideIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  .tx-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; background: var(--surface2); }
   .tx-info { flex: 1; min-width: 0; }
   .tx-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .tx-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
-  .tx-amount { font-family: 'DM Serif Display', serif; font-size: 18px; flex-shrink: 0; }
+  .tx-meta { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .tx-amount { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; font-weight: 700; flex-shrink: 0; }
   .tx-amount.expense { color: var(--red); }
-  .tx-amount.income { color: var(--accent); }
+  .tx-amount.income { color: var(--green); }
 
   /* ── FAB ── */
   .fab {
     position: fixed; bottom: calc(80px + env(safe-area-inset-bottom)); right: 20px;
-    width: 56px; height: 56px; border-radius: 50%;
-    background: var(--accent); color: #000; border: none; font-size: 26px;
+    width: 52px; height: 52px; border-radius: 16px;
+    background: var(--accent); color: #111318; border: none; font-size: 24px;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer; z-index: 200;
-    box-shadow: 0 4px 24px rgba(126,255,196,0.4);
+    box-shadow: 0 4px 20px rgba(45,212,191,0.25);
     transition: transform 0.15s, box-shadow 0.15s;
   }
-  .fab:active { transform: scale(0.94); box-shadow: 0 2px 12px rgba(126,255,196,0.3); }
+  .fab:active { transform: scale(0.93); box-shadow: 0 2px 10px rgba(45,212,191,0.2); }
 
   /* ── MODAL ── */
   .modal-backdrop {
@@ -172,60 +164,61 @@
   }
   .modal-backdrop.open { display: flex; }
   .modal {
-    background: var(--surface); border: 1px solid var(--border2);
-    border-radius: 28px 28px 0 0; padding: 8px 24px 40px;
+    background: var(--surface); border: none;
+    border-radius: 24px 24px 0 0; padding: 8px 24px 80px;
     width: 100%; max-height: 92vh; overflow-y: auto;
     animation: slideUp 0.3s cubic-bezier(0.16,1,0.3,1);
   }
   @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-  .modal-handle { width: 40px; height: 4px; border-radius: 2px; background: var(--surface3); margin: 12px auto 24px; cursor: grab; }
-  .modal-title { font-family: 'DM Serif Display', serif; font-size: 26px; margin-bottom: 24px; }
+  .modal-handle { width: 36px; height: 3px; border-radius: 2px; background: var(--surface3); margin: 10px auto 22px; cursor: grab; }
+  .modal-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 20px; letter-spacing: -0.3px; }
 
   /* ── FORM ── */
   .form-group { margin-bottom: 16px; }
-  .form-label { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); margin-bottom: 8px; display: block; }
+  .form-label { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text2); margin-bottom: 8px; display: block; }
   .form-input {
-    width: 100%; padding: 14px 16px; background: var(--surface2); border: 1px solid var(--border2);
+    width: 100%; padding: 13px 16px; background: var(--surface2); border: 1px solid var(--border);
     border-radius: var(--radius-sm); color: var(--text);
-    font-family: 'DM Sans', sans-serif; font-size: 15px;
+    font-family: 'Inter', sans-serif; font-size: 15px;
     outline: none; transition: border-color 0.2s; appearance: none; -webkit-appearance: none;
   }
-  .form-input:focus { border-color: var(--accent); }
-  .form-input.big { font-family: 'DM Serif Display', serif; font-size: 32px; text-align: center; padding: 18px; }
+  .form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(196,181,253,0.08); }
+  .form-input.big { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 36px; font-weight: 800; text-align: center; padding: 18px; letter-spacing: -1px; }
   .type-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
   .type-btn {
-    padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border2);
+    padding: 12px; border-radius: var(--radius-sm); border: none;
     background: var(--surface2); color: var(--text2);
-    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+    font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;
     cursor: pointer; transition: all 0.2s;
   }
-  .type-btn.active.expense { background: var(--red-dim); border-color: var(--red); color: var(--red); }
-  .type-btn.active.income { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+  .type-btn.active.expense { background: var(--red-dim); border-color: transparent; color: var(--red); }
+  .type-btn.active.income { background: var(--accent-dim); border-color: transparent; color: var(--accent); }
   .cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
   .cat-btn {
-    padding: 10px 6px; border-radius: var(--radius-sm); border: 1px solid var(--border);
-    background: var(--surface2); color: var(--text2);
-    font-family: 'DM Sans', sans-serif; font-size: 12px;
-    cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: all 0.2s;
+    padding: 10px 6px; border-radius: 10px; border: none;
+    background: var(--surface2); color: var(--text3);
+    font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500;
+    cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: all 0.15s;
   }
-  .cat-btn .cat-icon { font-size: 20px; }
-  .cat-btn.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+  .cat-btn .cat-icon { font-size: 19px; }
+  .cat-btn.active { border: none; color: var(--accent); background: var(--accent-dim); }
   .submit-btn {
-    width: 100%; padding: 16px; background: var(--accent); color: #000; border: none;
-    border-radius: var(--radius); font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 600;
-    cursor: pointer; margin-top: 8px; transition: opacity 0.15s;
+    width: 100%; padding: 15px; background: var(--accent); color: #111318; border: none;
+    border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600;
+    cursor: pointer; margin-top: 8px; transition: opacity 0.15s, transform 0.1s;
+    letter-spacing: 0.01em;
   }
-  .submit-btn:active { opacity: 0.85; }
+  .submit-btn:active { opacity: 0.9; transform: scale(0.99); }
 
   /* ── DEBT SCREEN ── */
-  .debt-total { margin: 0 16px 20px; background: linear-gradient(135deg, #1a0f0f 0%, #1a1a0f 100%); border: 1px solid rgba(255,107,107,0.2); border-radius: 24px; padding: 24px; }
-  .debt-hero { font-family: 'DM Serif Display', serif; font-size: 44px; color: var(--red); }
-  .debt-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 10px; }
+  .debt-total { margin: 0 16px 16px; background: var(--surface); border: none; border-radius: 16px; padding: 22px 24px; }
+  .debt-hero { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 44px; font-weight: 800; color: var(--red); letter-spacing: -1px; }
+  .debt-card { background: var(--surface); border: none; border-radius: var(--radius); padding: 16px 18px; margin-bottom: 10px; }
   .debt-card-header { display: flex; justify-content: space-between; align-items: center; }
-  .debt-card-name { font-size: 15px; font-weight: 500; }
-  .debt-card-amount { font-family: 'DM Serif Display', serif; font-size: 20px; color: var(--red); }
+  .debt-card-name { font-size: 15px; font-weight: 600; color: var(--text); }
+  .debt-card-amount { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; color: var(--red); }
   .debt-bar-bg { height: 4px; background: var(--surface3); border-radius: 2px; margin-top: 12px; }
-  .debt-bar-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--red), var(--amber)); transition: width 0.6s ease; }
+  .debt-bar-fill { height: 100%; border-radius: 2px; background: var(--accent); transition: width 0.6s ease; }
   .debt-meta { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11px; color: var(--text3); }
 
   /* ── VISA BREAKDOWN ── */
@@ -234,38 +227,38 @@
     gap: 8px; margin-top: 14px;
   }
   .visa-stat {
-    background: var(--surface2); border-radius: var(--radius-sm);
+    background: var(--surface2); border: none; border-radius: var(--radius-sm);
     padding: 10px 12px;
   }
-  .visa-stat-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
-  .visa-stat-value { font-family: 'DM Serif Display', serif; font-size: 18px; }
+  .visa-stat-label { font-size: 10px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; font-weight: 600; }
+  .visa-stat-value { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 18px; color: var(--text); font-weight: 600; }
   .visa-tag { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; padding: 2px 6px; border-radius: 20px; font-weight: 500; background: var(--purple-dim); color: var(--purple); margin-left: 4px; }
 
   /* ── MONTHLY SCREEN ── */
   .month-selector { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 16px; margin-bottom: 8px; }
-  .month-nav { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text2); font-size: 18px; }
-  .month-name { font-family: 'DM Serif Display', serif; font-size: 22px; }
+  .month-nav { background: var(--surface); border: none; border-radius: 8px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--accent); font-size: 18px; }
+  .month-name { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 700; }
   .donut-wrap { position: relative; width: 160px; height: 160px; margin: 0 auto 24px; }
   svg.donut { width: 160px; height: 160px; transform: rotate(-90deg); }
   .donut-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
-  .donut-total { font-family: 'DM Serif Display', serif; font-size: 22px; }
-  .donut-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
+  .donut-total { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 22px; font-weight: 700; }
+  .donut-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; }
 
 
   /* ── SETUP SCREEN ── */
-  .setup-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin: 0 16px 12px; padding: 18px; }
-  .setup-section-title { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text3); margin-bottom: 14px; }
+  .setup-section { background: var(--surface); border: none; border-radius: var(--radius); margin: 0 16px 12px; padding: 18px; }
+  .setup-section-title { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); opacity: 0.7; margin-bottom: 14px; }
   .setup-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
   .setup-item:last-child { border-bottom: none; padding-bottom: 0; }
   .setup-item-name { font-size: 14px; }
-  .setup-item-amount { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--text2); }
+  .setup-item-amount { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 18px; color: var(--text2); }
   .setup-delete { background: none; border: none; color: var(--text3); cursor: pointer; padding: 4px; font-size: 18px; }
   .add-item-row { display: flex; gap: 8px; margin-top: 12px; }
   .add-item-row .form-input { flex: 1; padding: 10px 12px; font-size: 13px; }
   .add-item-btn {
-    padding: 10px 16px; background: var(--accent-dim); border: 1px solid var(--accent-mid);
-    border-radius: var(--radius-sm); color: var(--accent);
-    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
+    padding: 10px 16px; background: var(--accent); border: none;
+    border-radius: var(--radius-sm); color: #111318;
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
   }
   .empty-state { text-align: center; padding: 40px 20px; color: var(--text3); font-size: 14px; }
   .empty-state .empty-icon { font-size: 36px; margin-bottom: 10px; }
@@ -280,20 +273,20 @@
   /* ── UNDO BANNER ── */
   .undo-banner {
     margin: 0 16px 12px; padding: 12px 16px;
-    background: var(--amber-dim); border: 1px solid var(--amber);
+    background: var(--amber-dim); border: none;
     border-radius: var(--radius-sm); font-size: 13px; color: var(--amber);
     display: none; justify-content: space-between; align-items: center;
   }
   .undo-btn {
     padding: 6px 14px; background: var(--amber); color: #000;
     border: none; border-radius: 6px;
-    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer;
+    font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer;
   }
 
   /* ── ROLLOVER ── */
   .rollover-info {
-    margin: 0 16px 16px; padding: 12px 16px; background: var(--surface2);
-    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    margin: 0 16px 16px; padding: 12px 16px; background: var(--accent-dim);
+    border: none; border-radius: var(--radius-sm);
     font-size: 13px; color: var(--text2); display: flex; justify-content: space-between; align-items: center;
   }
 </style>
@@ -326,7 +319,7 @@
   <!-- HOME -->
   <div class="screen active" id="screen-home">
     <div class="page-header">
-      <div style="font-family:'DM Serif Display',serif;font-size:13px;color:var(--text3);letter-spacing:0.05em;">FLOAT</div>
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:var(--text3);letter-spacing:0.05em;">FLOAT</div>
       <h1>This Week</h1>
       <p id="home-date-range" style="color:var(--text3);font-size:13px;"></p>
       <div class="sync-status">
@@ -337,7 +330,7 @@
     <div class="hero-card">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <div class="hero-label">Free to Spend</div>
-        <button onclick="openRolloverEdit()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:12px;cursor:pointer;padding:2px 6px;font-family:'DM Sans',sans-serif;">✎ Rollover</button>
+        <button onclick="openRolloverEdit()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:12px;cursor:pointer;padding:2px 6px;font-family:'Inter',sans-serif;">✎ Rollover</button>
       </div>
       <div class="hero-amount" id="hero-amount">$0.00</div>
       <div class="hero-sub">Weekly budget: <span id="hero-weekly">$0</span></div>
@@ -352,8 +345,8 @@
       <button class="undo-btn" onclick="undoEndWeek()">Undo</button>
     </div>
     <div class="stats-row">
-      <div class="stat-card"><div class="stat-label">Spent This Week</div><div class="stat-value red" id="stat-spent">$0</div></div>
-      <div class="stat-card"><div class="stat-label">Extra Income</div><div class="stat-value green" id="stat-income">$0</div></div>
+      <div class="stat-card spent"><div class="stat-label">Spent This Week</div><div class="stat-value red" id="stat-spent">$0</div></div>
+      <div class="stat-card income"><div class="stat-label">Extra Income</div><div class="stat-value green" id="stat-income">$0</div></div>
     </div>
     <div class="section">
       <div class="section-header">
@@ -369,10 +362,10 @@
   <!-- MONTHLY -->
   <div class="screen" id="screen-monthly">
     <div class="page-header">
-      <div style="font-family:'DM Serif Display',serif;font-size:13px;color:var(--text3);letter-spacing:0.05em;">FLOAT</div>
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:var(--text3);letter-spacing:0.05em;">FLOAT</div>
       <h1>Monthly View</h1>
       <p>Where your free spending went.</p>
-      <button onclick="exportMonthlyCSV()" style="position:absolute;top:56px;right:24px;padding:6px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;">⬇ Export</button>
+      <button onclick="exportMonthlyCSV()" style="position:absolute;top:56px;right:24px;padding:6px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text2);font-family:'Inter',sans-serif;font-size:12px;cursor:pointer;">⬇ Export</button>
     </div>
     <div class="month-selector">
       <div class="month-nav" onclick="changeMonth(-1)">‹</div>
@@ -395,7 +388,7 @@
   <!-- DEBT -->
   <div class="screen" id="screen-debt">
     <div class="page-header">
-      <div style="font-family:'DM Serif Display',serif;font-size:13px;color:var(--text3);letter-spacing:0.05em;">FLOAT</div>
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:var(--text3);letter-spacing:0.05em;">FLOAT</div>
       <h1>Debt Tracker</h1>
       <p>Watch your balances shrink.</p>
     </div>
@@ -429,7 +422,7 @@
   <!-- SETUP -->
   <div class="screen" id="screen-setup">
     <div class="page-header">
-      <div style="font-family:'DM Serif Display',serif;font-size:13px;color:var(--text3);letter-spacing:0.05em;">FLOAT</div>
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;color:var(--text3);letter-spacing:0.05em;">FLOAT</div>
       <h1>Budget Setup</h1>
       <p>Your fixed income & expenses.</p>
     </div>
@@ -495,11 +488,11 @@
           <div id="user-email" style="font-size:12px;color:var(--text3);margin-top:2px;"></div>
         </div>
       </div>
-      <button onclick="signOut()" style="width:100%;padding:12px;background:transparent;border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;margin-top:8px;">Sign Out</button>
+      <button onclick="signOut()" style="width:100%;padding:12px;background:transparent;border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text2);font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;margin-top:8px;">Sign Out</button>
     </div>
 
     <div style="padding:0 16px 24px;">
-      <button onclick="resetAllData()" style="width:100%;padding:14px;background:transparent;border:1px solid var(--red);border-radius:var(--radius);color:var(--red);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;opacity:0.7;">
+      <button onclick="resetAllData()" style="width:100%;padding:14px;background:transparent;border:1px solid var(--red);border-radius:var(--radius);color:var(--red);font-family:'Inter',sans-serif;font-size:14px;font-weight:500;cursor:pointer;opacity:0.7;">
         ⚠️ Reset & Clear All Data
       </button>
     </div>
@@ -556,7 +549,7 @@
         <option value="fixed-bill">📋 Fixed Bill (Visa)</option>
         <option value="cash">💵 Cash</option>
       </select>
-      <div id="fixed-bill-note" style="display:none;margin-top:8px;padding:10px 12px;background:var(--purple-dim);border-radius:var(--radius-sm);border:1px solid rgba(176,107,255,0.3);font-size:12px;color:var(--purple);">
+      <div id="fixed-bill-note" style="display:none;margin-top:8px;padding:10px 12px;background:var(--accent-dim);border-radius:var(--radius-sm);border:1px solid rgba(45,212,191,0.25);font-size:12px;color:var(--purple);">
         📋 Adds to your Visa balance but won't affect your weekly free spending — fixed bills are already budgeted in Setup.
       </div>
     </div>
@@ -583,7 +576,7 @@
       <input class="form-input" id="edit-debt-original" type="number" placeholder="0.00">
     </div>
     <button class="submit-btn" onclick="saveEditDebt()">Save Changes</button>
-    <button onclick="closeEditDebt()" style="width:100%;padding:14px;background:transparent;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;margin-top:8px;">Cancel</button>
+    <button onclick="closeEditDebt()" style="width:100%;padding:14px;background:transparent;border:none;color:var(--text3);font-family:'Inter',sans-serif;font-size:14px;cursor:pointer;margin-top:8px;">Cancel</button>
   </div>
 </div>
 
@@ -606,12 +599,12 @@
       <div style="font-size:12px;color:var(--text3);margin-bottom:8px;">Need to re-sync your balance with your real statement?</div>
       <div style="display:flex;gap:8px;">
         <input class="form-input" id="edit-visa-resync" type="number" placeholder="Real balance from bank" style="flex:1;padding:8px 12px;font-size:13px;">
-        <button onclick="resyncVisaBalance()" style="padding:10px 14px;background:var(--purple);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Sync</button>
+        <button onclick="resyncVisaBalance()" style="padding:10px 14px;background:var(--accent);color:#111318;border:none;border-radius:var(--radius-sm);font-family:'Inter',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">Sync</button>
       </div>
       <div style="font-size:11px;color:var(--text3);margin-top:6px;">This resets the balance baseline to match your bank statement without affecting payment history.</div>
     </div>
     <button class="submit-btn" onclick="saveEditVisa()">Save Changes</button>
-    <button onclick="closeEditVisa()" style="width:100%;padding:14px;background:transparent;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;margin-top:8px;">Cancel</button>
+    <button onclick="closeEditVisa()" style="width:100%;padding:14px;background:transparent;border:none;color:var(--text3);font-family:'Inter',sans-serif;font-size:14px;cursor:pointer;margin-top:8px;">Cancel</button>
   </div>
 </div>
 
@@ -666,8 +659,8 @@
       </select>
     </div>
     <button class="submit-btn" onclick="saveEditTx()">Save Changes</button>
-    <button onclick="closeEditTx()" style="width:100%;padding:14px;background:transparent;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;margin-top:8px;">Cancel</button>
-    <button onclick="deleteTx(parseInt(document.getElementById('edit-tx-id').value))" style="width:100%;padding:14px;background:transparent;border:none;color:var(--red);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;margin-top:4px;">🗑 Delete Transaction</button>
+    <button onclick="closeEditTx()" style="width:100%;padding:14px;background:transparent;border:none;color:var(--text3);font-family:'Inter',sans-serif;font-size:14px;cursor:pointer;margin-top:8px;">Cancel</button>
+    <button onclick="deleteTx(parseInt(document.getElementById('edit-tx-id').value))" style="width:100%;padding:14px;background:transparent;border:none;color:var(--red);font-family:'Inter',sans-serif;font-size:13px;cursor:pointer;margin-top:4px;">🗑 Delete Transaction</button>
   </div>
 </div>
 
@@ -685,7 +678,7 @@
       This adds the interest charge to your Visa balance without affecting your weekly budget or resetting any payments.
     </div>
     <button class="submit-btn" onclick="submitInterest()">Add to Balance</button>
-    <button onclick="closeInterest()" style="width:100%;padding:14px;background:transparent;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;margin-top:8px;">Cancel</button>
+    <button onclick="closeInterest()" style="width:100%;padding:14px;background:transparent;border:none;color:var(--text3);font-family:'Inter',sans-serif;font-size:14px;cursor:pointer;margin-top:8px;">Cancel</button>
   </div>
 </div>
 
@@ -718,7 +711,7 @@
       💸 This will deduct from your weekly free spending since it's paying off old balance.
     </div>
     <button class="submit-btn" onclick="submitVisaPayment()">Log Payment</button>
-    <button onclick="closeVisaPayment()" style="width:100%;padding:14px;background:transparent;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;margin-top:8px;">Cancel</button>
+    <button onclick="closeVisaPayment()" style="width:100%;padding:14px;background:transparent;border:none;color:var(--text3);font-family:'Inter',sans-serif;font-size:14px;cursor:pointer;margin-top:8px;">Cancel</button>
   </div>
 </div>
 
@@ -734,7 +727,7 @@
       <div style="font-size:11px;color:var(--text3);margin-top:6px;">Use a negative number if you overspent (e.g. -195).</div>
     </div>
     <button class="submit-btn" onclick="saveRolloverEdit()">Save</button>
-    <button onclick="closeRolloverEdit()" style="width:100%;padding:14px;background:transparent;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;margin-top:8px;">Cancel</button>
+    <button onclick="closeRolloverEdit()" style="width:100%;padding:14px;background:transparent;border:none;color:var(--text3);font-family:'Inter',sans-serif;font-size:14px;cursor:pointer;margin-top:8px;">Cancel</button>
   </div>
 </div>
 
@@ -1034,6 +1027,7 @@ function renderHome() {
   document.getElementById('home-date-range').textContent = weekLabel(currentWeekKey());
   document.getElementById('hero-amount').textContent = fmt(balance);
   document.getElementById('hero-amount').className = 'hero-amount' + (balance<0?' negative':'');
+  document.querySelector('.hero-card').classList.toggle('negative', balance<0);
   document.getElementById('hero-weekly').textContent = fmt(budget);
   document.getElementById('stat-spent').textContent = fmt(spent);
   document.getElementById('stat-income').textContent = fmt(earned);
@@ -1479,17 +1473,17 @@ function renderDebt() {
       const liveBalance = (d.startingBalance != null ? d.startingBalance : d.balance) + totalCreditSpend - totalPayments;
       const limit = d.limit || d.target || 15000;
       const usedPct = Math.min(100, (liveBalance / limit) * 100);
-      const barColor = usedPct > 90 ? 'var(--red)' : usedPct > 70 ? 'var(--amber)' : 'var(--purple)';
+      const barColor = usedPct > 90 ? 'var(--red)' : usedPct > 70 ? 'var(--amber)' : 'var(--accent)';
       const available = Math.max(0, limit - liveBalance);
 
-      return `<div class="debt-card" style="border-color:rgba(176,107,255,0.25);">
+      return `<div class="debt-card" style="border-color:rgba(45,212,191,0.2);">
         <div class="debt-card-header">
           <div>
             <div class="debt-card-name">${d.name} <span class="visa-tag">revolving</span></div>
             <div style="font-size:11px;color:var(--text3);margin-top:2px;">Credit limit: ${fmt(limit)}</div>
           </div>
           <div style="display:flex;align-items:center;gap:6px;">
-            <div class="debt-card-amount" style="color:var(--purple);">${fmt(liveBalance)}</div>
+            <div class="debt-card-amount" style="color:var(--red);">${fmt(liveBalance)}</div>
             <button class="setup-delete" onclick="openEditDebt(${d.id})" style="color:var(--text3);font-size:14px;padding:4px 6px;" title="Edit">✎</button>
             <button class="setup-delete" onclick="removeDebt(${d.id})">×</button>
           </div>
@@ -1510,8 +1504,8 @@ function renderDebt() {
 
         <!-- Payment buttons -->
         <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:14px;">
-          <button class="submit-btn" onclick="openVisaPayment(${d.id})" style="background:var(--purple);color:#fff;">Log Payment</button>
-          <button onclick="openInterest(${d.id})" style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;">+ Interest</button>
+          <button class="submit-btn" onclick="openVisaPayment(${d.id})" style="background:var(--accent);color:#111318;">Log Payment</button>
+          <button onclick="openInterest(${d.id})" style="padding:14px 16px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text2);font-family:'Inter',sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;">+ Interest</button>
         </div>
         <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
           <button onclick="toggleHistory('hist-${d.id}')" style="background:none;border:none;width:100%;display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:0;">
@@ -1528,7 +1522,7 @@ function renderDebt() {
                       <div style="font-size:11px;color:var(--text3);margin-top:1px;">${h.date}</div>
                     </div>
                     <div style="display:flex;align-items:center;gap:10px;">
-                      <div style="font-family:'DM Serif Display',serif;font-size:16px;color:${h.type==='interest'?'var(--red)':h.type==='old'?'var(--amber)':'var(--accent)'};">${h.type==='interest'||h.type==='bill'?'+':'-'}${fmt(h.amount)}</div>
+                      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;color:${h.type==='interest'?'var(--red)':h.type==='old'?'var(--amber)':'var(--accent)'};">${h.type==='interest'||h.type==='bill'?'+':'-'}${fmt(h.amount)}</div>
                       <button onclick="deleteDebtHistory(${d.id},${h.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:2px 4px;">×</button>
                     </div>
                   </div>`).join('')}
@@ -1542,12 +1536,12 @@ function renderDebt() {
                         <div style="font-size:11px;color:var(--text3);margin-top:1px;">${h.date}</div>
                       </div>
                       <div style="display:flex;align-items:center;gap:10px;">
-                        <div style="font-family:'DM Serif Display',serif;font-size:16px;color:${h.type==='interest'?'var(--red)':h.type==='old'?'var(--amber)':'var(--accent)'};">${h.type==='interest'||h.type==='bill'?'+':'-'}${fmt(h.amount)}</div>
+                        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;color:${h.type==='interest'?'var(--red)':h.type==='old'?'var(--amber)':'var(--accent)'};">${h.type==='interest'||h.type==='bill'?'+':'-'}${fmt(h.amount)}</div>
                         <button onclick="deleteDebtHistory(${d.id},${h.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:2px 4px;">×</button>
                       </div>
                     </div>`).join('')}
                 </div>
-                <button onclick="toggleFullHistory('hist-full-${d.id}','hist-showmore-${d.id}')" id="hist-showmore-${d.id}" style="width:100%;padding:10px;background:none;border:none;color:var(--accent);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;margin-top:4px;">Show all ${d.history.length} entries ▾</button>
+                <button onclick="toggleFullHistory('hist-full-${d.id}','hist-showmore-${d.id}')" id="hist-showmore-${d.id}" style="width:100%;padding:10px;background:none;border:none;color:var(--accent);font-family:'Inter',sans-serif;font-size:12px;cursor:pointer;margin-top:4px;">Show all ${d.history.length} entries ▾</button>
               `:''}
             `:'<div style="font-size:13px;color:var(--text3);padding:8px 0;">No history yet.</div>'}
           </div>
@@ -1574,7 +1568,7 @@ function renderDebt() {
         <div style="display:flex;gap:8px;margin-top:12px;">
           <input class="form-input" id="payment-${d.id}" type="number" placeholder="Payment amount" style="flex:1;padding:8px 12px;font-size:13px;">
           <button class="add-item-btn" onclick="makePayment(${d.id})">Pay</button>
-          <button onclick="openInterest(${d.id})" style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text2);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;">+ Interest</button>
+          <button onclick="openInterest(${d.id})" style="padding:10px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text2);font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;">+ Interest</button>
         </div>
         <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
           <button onclick="toggleHistory('hist-${d.id}')" style="background:none;border:none;width:100%;display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:0;">
@@ -1587,11 +1581,11 @@ function renderDebt() {
                 ${d.history.slice().reverse().slice(0,5).map(h=>`
                   <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);">
                     <div>
-                      <div style="font-size:13px;color:${h.type==='interest'?'var(--red)':h.type==='bill'?'var(--purple)':'var(--accent)'};">${h.type==='interest'?'Interest charge':h.type==='bill'?'Fixed bill logged':'Payment'}</div>
+                      <div style="font-size:13px;color:${h.type==='interest'?'var(--red)':h.type==='bill'?'var(--blue)':'var(--accent)'};">${h.type==='interest'?'Interest charge':h.type==='bill'?'Fixed bill logged':'Payment'}</div>
                       <div style="font-size:11px;color:var(--text3);margin-top:1px;">${h.date}</div>
                     </div>
                     <div style="display:flex;align-items:center;gap:10px;">
-                      <div style="font-family:'DM Serif Display',serif;font-size:16px;color:${h.type==='interest'?'var(--red)':h.type==='bill'?'var(--purple)':'var(--accent)'};">${h.type==='interest'||h.type==='bill'?'+':'-'}${fmt(h.amount)}</div>
+                      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;color:${h.type==='interest'?'var(--red)':h.type==='bill'?'var(--blue)':'var(--accent)'};">${h.type==='interest'||h.type==='bill'?'+':'-'}${fmt(h.amount)}</div>
                       <button onclick="deleteDebtHistory(${d.id},${h.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:2px 4px;">×</button>
                     </div>
                   </div>`).join('')}
@@ -1601,16 +1595,16 @@ function renderDebt() {
                   ${d.history.slice().reverse().slice(5).map(h=>`
                     <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);">
                       <div>
-                        <div style="font-size:13px;color:${h.type==='interest'?'var(--red)':h.type==='bill'?'var(--purple)':'var(--accent)'};">${h.type==='interest'?'Interest charge':h.type==='bill'?'Fixed bill logged':'Payment'}</div>
+                        <div style="font-size:13px;color:${h.type==='interest'?'var(--red)':h.type==='bill'?'var(--blue)':'var(--accent)'};">${h.type==='interest'?'Interest charge':h.type==='bill'?'Fixed bill logged':'Payment'}</div>
                         <div style="font-size:11px;color:var(--text3);margin-top:1px;">${h.date}</div>
                       </div>
                       <div style="display:flex;align-items:center;gap:10px;">
-                        <div style="font-family:'DM Serif Display',serif;font-size:16px;color:${h.type==='interest'?'var(--red)':h.type==='bill'?'var(--purple)':'var(--accent)'};">${h.type==='interest'||h.type==='bill'?'+':'-'}${fmt(h.amount)}</div>
+                        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;color:${h.type==='interest'?'var(--red)':h.type==='bill'?'var(--blue)':'var(--accent)'};">${h.type==='interest'||h.type==='bill'?'+':'-'}${fmt(h.amount)}</div>
                         <button onclick="deleteDebtHistory(${d.id},${h.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:2px 4px;">×</button>
                       </div>
                     </div>`).join('')}
                 </div>
-                <button onclick="toggleFullHistory('hist-full-${d.id}','hist-showmore-${d.id}')" id="hist-showmore-${d.id}" style="width:100%;padding:10px;background:none;border:none;color:var(--accent);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;margin-top:4px;">Show all ${d.history.length} entries ▾</button>
+                <button onclick="toggleFullHistory('hist-full-${d.id}','hist-showmore-${d.id}')" id="hist-showmore-${d.id}" style="width:100%;padding:10px;background:none;border:none;color:var(--accent);font-family:'Inter',sans-serif;font-size:12px;cursor:pointer;margin-top:4px;">Show all ${d.history.length} entries ▾</button>
               `:''}
             `:'<div style="font-size:13px;color:var(--text3);padding:8px 0;">No history yet.</div>'}
           </div>
@@ -1896,7 +1890,7 @@ function renderMonthly() {
     const breakdown = descEntries.map(([desc,dAmt])=>`
       <div style="display:flex;justify-content:space-between;padding:5px 0 5px 22px;border-bottom:1px solid var(--border);">
         <span style="font-size:12px;color:var(--text2);">${desc}</span>
-        <span style="font-size:12px;font-family:'DM Serif Display',serif;color:var(--text2);">${fmt(dAmt)}</span>
+        <span style="font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text2);">${fmt(dAmt)}</span>
       </div>`).join('');
 
     return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;overflow:hidden;">
@@ -1904,7 +1898,7 @@ function renderMonthly() {
         <div style="width:10px;height:10px;border-radius:50%;background:${meta.color};flex-shrink:0;"></div>
         <div style="flex:1;font-size:14px;">${meta.icon} ${CAT_LABELS[cat]||cat}</div>
         <div style="font-size:12px;color:var(--text3);">${((amt/total)*100).toFixed(0)}%</div>
-        <div style="font-family:'DM Serif Display',serif;font-size:16px;margin-right:8px;">${fmt(amt)}</div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;margin-right:8px;">${fmt(amt)}</div>
         <div id="cat-arrow-${cat}" style="font-size:11px;color:var(--accent);">▾</div>
       </div>
       <div id="cat-bd-${cat}" style="display:none;border-top:1px solid var(--border);">
@@ -1937,21 +1931,21 @@ window.renderMonthlyIncome = () => {
     const breakdown = Object.entries(byDesc).sort((a,b)=>b[1]-a[1]).map(([desc,dAmt])=>`
       <div style="display:flex;justify-content:space-between;padding:5px 0 5px 22px;border-bottom:1px solid var(--border);">
         <span style="font-size:12px;color:var(--text2);">${desc}</span>
-        <span style="font-size:12px;font-family:'DM Serif Display',serif;color:var(--text2);">${fmt(dAmt)}</span>
+        <span style="font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text2);">${fmt(dAmt)}</span>
       </div>`).join('');
     return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;overflow:hidden;">
       <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;" onclick="toggleCatBreakdown('inc-bd-${cat}','inc-arrow-${cat}')">
         <div style="width:10px;height:10px;border-radius:50%;background:${meta.color};flex-shrink:0;"></div>
         <div style="flex:1;font-size:14px;">${meta.icon} ${CAT_LABELS[cat]||cat}</div>
         <div style="font-size:12px;color:var(--text3);">${((amt/total)*100).toFixed(0)}%</div>
-        <div style="font-family:'DM Serif Display',serif;font-size:16px;margin-right:8px;color:var(--accent);">${fmt(amt)}</div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;margin-right:8px;color:var(--accent);">${fmt(amt)}</div>
         <div id="inc-arrow-${cat}" style="font-size:11px;color:var(--accent);">▾</div>
       </div>
       <div id="inc-bd-${cat}" style="display:none;border-top:1px solid var(--border);">${breakdown}</div>
     </div>`;
   }).join('') + `<div style="display:flex;justify-content:space-between;padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm);margin-top:4px;">
     <span style="font-size:13px;font-weight:600;">Total Income</span>
-    <span style="font-family:'DM Serif Display',serif;font-size:16px;color:var(--accent);">${fmt(total)}</span>
+    <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;color:var(--accent);">${fmt(total)}</span>
   </div>`;
 };
 
