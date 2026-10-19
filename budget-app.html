@@ -1522,7 +1522,7 @@ function renderDebt() {
                       <div style="font-size:11px;color:var(--text3);margin-top:1px;">${h.date}</div>
                     </div>
                     <div style="display:flex;align-items:center;gap:10px;">
-                      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;color:${h.type==='interest'?'var(--red)':h.type==='old'?'var(--amber)':'var(--accent)'};">${h.type==='interest'||h.type==='bill'?'+':'-'}${fmt(h.amount)}</div>
+                      <div style="font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:${h.type==='interest'?'var(--red)':h.type==='old'?'var(--amber)':'var(--accent)'};">${h.type==='interest'||h.type==='bill'?'+':'-'}${fmt(h.amount)}</div>
                       <button onclick="deleteDebtHistory(${d.id},${h.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:2px 4px;">×</button>
                     </div>
                   </div>`).join('')}
@@ -1536,7 +1536,7 @@ function renderDebt() {
                         <div style="font-size:11px;color:var(--text3);margin-top:1px;">${h.date}</div>
                       </div>
                       <div style="display:flex;align-items:center;gap:10px;">
-                        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;color:${h.type==='interest'?'var(--red)':h.type==='old'?'var(--amber)':'var(--accent)'};">${h.type==='interest'||h.type==='bill'?'+':'-'}${fmt(h.amount)}</div>
+                        <div style="font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:${h.type==='interest'?'var(--red)':h.type==='old'?'var(--amber)':'var(--accent)'};">${h.type==='interest'||h.type==='bill'?'+':'-'}${fmt(h.amount)}</div>
                         <button onclick="deleteDebtHistory(${d.id},${h.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:2px 4px;">×</button>
                       </div>
                     </div>`).join('')}
@@ -1585,7 +1585,7 @@ function renderDebt() {
                       <div style="font-size:11px;color:var(--text3);margin-top:1px;">${h.date}</div>
                     </div>
                     <div style="display:flex;align-items:center;gap:10px;">
-                      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;color:${h.type==='interest'?'var(--red)':h.type==='bill'?'var(--blue)':'var(--accent)'};">${h.type==='interest'||h.type==='bill'?'+':'-'}${fmt(h.amount)}</div>
+                      <div style="font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:${h.type==='interest'?'var(--red)':h.type==='bill'?'var(--blue)':'var(--accent)'};">${h.type==='interest'||h.type==='bill'?'+':'-'}${fmt(h.amount)}</div>
                       <button onclick="deleteDebtHistory(${d.id},${h.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:2px 4px;">×</button>
                     </div>
                   </div>`).join('')}
@@ -1599,7 +1599,7 @@ function renderDebt() {
                         <div style="font-size:11px;color:var(--text3);margin-top:1px;">${h.date}</div>
                       </div>
                       <div style="display:flex;align-items:center;gap:10px;">
-                        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;color:${h.type==='interest'?'var(--red)':h.type==='bill'?'var(--blue)':'var(--accent)'};">${h.type==='interest'||h.type==='bill'?'+':'-'}${fmt(h.amount)}</div>
+                        <div style="font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:${h.type==='interest'?'var(--red)':h.type==='bill'?'var(--blue)':'var(--accent)'};">${h.type==='interest'||h.type==='bill'?'+':'-'}${fmt(h.amount)}</div>
                         <button onclick="deleteDebtHistory(${d.id},${h.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:2px 4px;">×</button>
                       </div>
                     </div>`).join('')}
@@ -1890,7 +1890,7 @@ function renderMonthly() {
     const breakdown = descEntries.map(([desc,dAmt])=>`
       <div style="display:flex;justify-content:space-between;padding:5px 0 5px 22px;border-bottom:1px solid var(--border);">
         <span style="font-size:12px;color:var(--text2);">${desc}</span>
-        <span style="font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text2);">${fmt(dAmt)}</span>
+        <span style="font-size:12px;font-family:'Inter',sans-serif;font-weight:500;color:var(--text2);">${fmt(dAmt)}</span>
       </div>`).join('');
 
     return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;overflow:hidden;">
@@ -1898,7 +1898,7 @@ function renderMonthly() {
         <div style="width:10px;height:10px;border-radius:50%;background:${meta.color};flex-shrink:0;"></div>
         <div style="flex:1;font-size:14px;">${meta.icon} ${CAT_LABELS[cat]||cat}</div>
         <div style="font-size:12px;color:var(--text3);">${((amt/total)*100).toFixed(0)}%</div>
-        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;margin-right:8px;">${fmt(amt)}</div>
+        <div style="font-family:'Inter',sans-serif;font-size:15px;font-weight:600;margin-right:8px;">${fmt(amt)}</div>
         <div id="cat-arrow-${cat}" style="font-size:11px;color:var(--accent);">▾</div>
       </div>
       <div id="cat-bd-${cat}" style="display:none;border-top:1px solid var(--border);">
@@ -1931,21 +1931,21 @@ window.renderMonthlyIncome = () => {
     const breakdown = Object.entries(byDesc).sort((a,b)=>b[1]-a[1]).map(([desc,dAmt])=>`
       <div style="display:flex;justify-content:space-between;padding:5px 0 5px 22px;border-bottom:1px solid var(--border);">
         <span style="font-size:12px;color:var(--text2);">${desc}</span>
-        <span style="font-size:12px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--text2);">${fmt(dAmt)}</span>
+        <span style="font-size:12px;font-family:'Inter',sans-serif;font-weight:500;color:var(--text2);">${fmt(dAmt)}</span>
       </div>`).join('');
     return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px;overflow:hidden;">
       <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;" onclick="toggleCatBreakdown('inc-bd-${cat}','inc-arrow-${cat}')">
         <div style="width:10px;height:10px;border-radius:50%;background:${meta.color};flex-shrink:0;"></div>
         <div style="flex:1;font-size:14px;">${meta.icon} ${CAT_LABELS[cat]||cat}</div>
         <div style="font-size:12px;color:var(--text3);">${((amt/total)*100).toFixed(0)}%</div>
-        <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;margin-right:8px;color:var(--accent);">${fmt(amt)}</div>
+        <div style="font-family:'Inter',sans-serif;font-size:15px;font-weight:600;margin-right:8px;color:var(--accent);">${fmt(amt)}</div>
         <div id="inc-arrow-${cat}" style="font-size:11px;color:var(--accent);">▾</div>
       </div>
       <div id="inc-bd-${cat}" style="display:none;border-top:1px solid var(--border);">${breakdown}</div>
     </div>`;
   }).join('') + `<div style="display:flex;justify-content:space-between;padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm);margin-top:4px;">
     <span style="font-size:13px;font-weight:600;">Total Income</span>
-    <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:16px;color:var(--accent);">${fmt(total)}</span>
+    <span style="font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:var(--accent);">${fmt(total)}</span>
   </div>`;
 };
 
